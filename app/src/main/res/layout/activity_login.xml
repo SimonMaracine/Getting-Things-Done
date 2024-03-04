@@ -6,30 +6,18 @@
     android:layout_height="match_parent"
     tools:context=".Login">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
-        android:text="Getting Things Done"
-        android:textAlignment="center"
-        android:textAppearance="@style/TextAppearance.AppCompat.Display1"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="HardcodedText" />
-
     <LinearLayout
-        android:layout_width="409dp"
-        android:layout_height="150dp"
+        android:id="@+id/linearLayout"
+        android:layout_width="0dp"
+        android:layout_height="200dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/btnLogin"
+        app:layout_constraintBottom_toTopOf="@+id/btnSignUp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView"
-        app:layout_constraintVertical_bias="0.65">
+        app:layout_constraintTop_toBottomOf="@+id/imageView">
 
         <EditText
             android:id="@+id/inpEmail"
@@ -53,18 +41,46 @@
             android:importantForAutofill="no"
             android:inputType="textPassword"
             tools:ignore="HardcodedText" />
+
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:onClick="onLoginButtonPressed"
+            android:text="Login"
+            android:textAppearance="@style/TextAppearance.AppCompat.Large"
+            tools:ignore="HardcodedText" />
     </LinearLayout>
 
     <Button
-        android:id="@+id/btnLogin"
+        android:id="@+id/btnSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="128dp"
-        android:text="Login"
+        android:onClick="onSignUpButtonPressed"
+        android:text="Sign Up Instead"
         android:textAppearance="@style/TextAppearance.AppCompat.Large"
-        android:onClick="onLoginButtonPressed"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout"
+        app:layout_constraintVertical_bias="0.5"
         tools:ignore="HardcodedText" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="16dp"
+        android:adjustViewBounds="true"
+        android:cropToPadding="false"
+        android:scaleType="fitCenter"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@drawable/todo_tasks_list_creative_icon_"
+        tools:ignore="ContentDescription" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

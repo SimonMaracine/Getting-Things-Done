@@ -16,5 +16,11 @@ public class Login extends AppCompatActivity {
 
     public void onLoginButtonPressed(View view) {
         Toast.makeText(getApplicationContext(), "Input pressed", Toast.LENGTH_SHORT).show();
+
+        // TODO send a log in request, then wait for validation and result
+    }
+
+    public void onSignUpButtonPressed(View view) {
+        // TODO send a create account request, then wait for validation and result
     }
 }
