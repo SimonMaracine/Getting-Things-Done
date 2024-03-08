@@ -18,7 +18,7 @@ public class Login extends AppCompatActivity {
     public void onLoginButtonPressed(View view) {
         // TODO send a log in request, then wait for validation and result
 
-        startActivity(new Intent(Login.this, Lists.class));
+        startActivity(new Intent(Login.this, Main.class));
     }
 
     public void onSignUpButtonPressed(View view) {
