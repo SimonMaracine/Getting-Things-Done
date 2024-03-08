@@ -1,9 +1,9 @@
 package com.example.gettingthingsdone;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
-import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
@@ -19,26 +19,34 @@ public class Main extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 0:
-                        Toast.makeText(getApplicationContext(), "Lists", Toast.LENGTH_SHORT).show();
+                        getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragMain, Lists.class, null)
+                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                            .commit();
                         break;
                     case 1:
-                        Toast.makeText(getApplicationContext(), "Motivational", Toast.LENGTH_SHORT).show();
+                        getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragMain, Motivational.class, null)
+                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                            .commit();
                         break;
                     case 2:
-                        Toast.makeText(getApplicationContext(), "Settings", Toast.LENGTH_SHORT).show();
+                        getSupportFragmentManager()
+                            .beginTransaction()
+                            .replace(R.id.fragMain, Settings.class, null)
+                            .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE)
+                            .commit();
                         break;
                 }
             }
 
             @Override
-            public void onTabUnselected(TabLayout.Tab tab) {
-
-            }
+            public void onTabUnselected(TabLayout.Tab tab) {}
 
             @Override
-            public void onTabReselected(TabLayout.Tab tab) {
-
-            }
+            public void onTabReselected(TabLayout.Tab tab) {}
         });
     }
 }
