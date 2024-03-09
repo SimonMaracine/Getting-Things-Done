@@ -1,64 +1,58 @@
 package com.example.gettingthingsdone;
 
+import android.content.Intent;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link Lists#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class Lists extends Fragment {
-
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-    public Lists() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment MainFrag.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static Lists newInstance(String param1, String param2) {
-        Lists fragment = new Lists();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
+    private ScrollView viewLists;  // TODO
+    private LinearLayout lytLists;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_lists, container, false);
+    }
+
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        viewLists = view.findViewById(R.id.viewLists);
+        lytLists = view.findViewById(R.id.lytLists);
+
+        Button btnCreateList = view.findViewById(R.id.btnCreateList);
+        btnCreateList.setOnClickListener(this::onCreateListButtonPressed);
+    }
+
+    public void onCreateListButtonPressed(View view) {
+        // Remove the placeholder text, if it's there
+        View first = lytLists.getChildAt(0);
+
+        if (first instanceof TextView && first.getId() == R.id.txtEmpy) {
+            lytLists.removeViewAt(0);
+        }
+
+        // Add the new list
+        Button btnFodder = new Button(this.getContext());
+        btnFodder.setText("Fodder");
+
+        lytLists.addView(btnFodder);
     }
 }

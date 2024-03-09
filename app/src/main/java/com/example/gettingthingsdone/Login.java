@@ -8,7 +8,6 @@ import android.view.View;
 import android.widget.Toast;
 
 public class Login extends AppCompatActivity {
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
