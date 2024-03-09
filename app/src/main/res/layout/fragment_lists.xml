@@ -38,13 +38,13 @@
                 android:id="@+id/lytLists"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:paddingVertical="16dp">
+                android:orientation="vertical">
 
                 <TextView
                     android:id="@+id/txtEmpy"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:paddingVertical="16dp"
                     android:text="Empty, try creating some lists"
                     android:textAlignment="center"
                     android:textAllCaps="false"
