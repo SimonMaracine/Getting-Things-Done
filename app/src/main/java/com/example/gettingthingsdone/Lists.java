@@ -8,8 +8,6 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.constraintlayout.widget.ConstraintSet;
-import androidx.constraintlayout.widget.Constraints;
 import androidx.fragment.app.Fragment;
 
 import android.util.TypedValue;
@@ -23,14 +21,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 // https://www.flaticon.com/free-icons/tick
 
 public class Lists extends Fragment {
     private LinearLayout lytLists;
 
-    private HashMap<Integer, Object> lists;
+    private HashMap<Integer, TodoList> lists = new HashMap<>();
+    private int counter;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -63,11 +61,16 @@ public class Lists extends Fragment {
             lytLists.addView(createSpacing());
         }
 
+        String defaultName = "<New List " + counter + ">";
+        int index = counter++;
+
         // Add the new list
         lytLists.addView(createSeparator());
-        lytLists.addView(createNewList());
+        lytLists.addView(createNewList(index, defaultName));
         lytLists.addView(createSeparator());
         lytLists.addView(createSpacing());
+
+        lists.put(index, new TodoList(index, defaultName));
 
 //        LinearLayout lytList = new LinearLayout(this.getContext());
 //        lytList.setOrientation(LinearLayout.HORIZONTAL);
@@ -85,7 +88,7 @@ public class Lists extends Fragment {
     }
 
     @SuppressLint("SetTextI18n")
-    private View createNewList() {
+    private View createNewList(int id, String name) {
         LinearLayout lytList = new LinearLayout(this.getContext());
         lytList.setOrientation(LinearLayout.HORIZONTAL);
         lytList.setGravity(Gravity.END);
@@ -94,7 +97,7 @@ public class Lists extends Fragment {
         int horizontalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
 
         TextView txtList = new TextView(getContext());
-        txtList.setText("<New List>");
+        txtList.setText(name);
         txtList.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
         txtList.setPadding(horizontalPadding, verticalPadding, 0, verticalPadding);
         txtList.setLayoutParams(new LinearLayout.LayoutParams(
@@ -110,17 +113,11 @@ public class Lists extends Fragment {
         btnList.setLayoutParams(new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            0.5f
+            0.25f
         ));
         btnList.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getContext(), "Clicked list " + id, Toast.LENGTH_SHORT).show();
         });
-
-//        layoutParams.startToEnd = txtList.getId();
-//        layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
-//        layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
-//        layoutParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
-//        layoutParams.horizontalBias = 1.0f;
 
         lytList.addView(btnList);
 
