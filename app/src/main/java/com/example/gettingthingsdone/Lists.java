@@ -7,17 +7,23 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import androidx.constraintlayout.widget.Constraints;
 import androidx.fragment.app.Fragment;
 
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 // https://www.flaticon.com/free-icons/tick
 
@@ -80,42 +86,45 @@ public class Lists extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private View createNewList() {
+        LinearLayout lytList = new LinearLayout(this.getContext());
+        lytList.setOrientation(LinearLayout.HORIZONTAL);
+        lytList.setGravity(Gravity.END);
+
         int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
-        int horizontalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 32, getResources().getDisplayMetrics());
+        int horizontalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
 
         TextView txtList = new TextView(getContext());
         txtList.setText("<New List>");
         txtList.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
-        txtList.setPadding(horizontalPadding, verticalPadding, horizontalPadding, verticalPadding);
-        txtList.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
-//        txtList.setBackgroundColor(Color.parseColor("#FAF5FF"));
+        txtList.setPadding(horizontalPadding, verticalPadding, 0, verticalPadding);
+        txtList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            1.0f
+        ));
 
-        // TODO maybe remove
-//        txtList.setOnTouchListener((v, event) -> {
-//            switch (event.getAction()) {
-//                case MotionEvent.ACTION_DOWN: {
-//                    TextView view = (TextView) v;
-//                    view.getBackground().setColorFilter(ContextCompat.getColor(requireContext(), R.color.purple_200), PorterDuff.Mode.SRC_ATOP);
-//                    view.invalidate();
-//                    break;
-//                }
-//                case MotionEvent.ACTION_UP:
-//                case MotionEvent.ACTION_CANCEL: {
-//                    TextView view = (TextView) v;
-//                    view.getBackground().clearColorFilter();
-//                    view.invalidate();
-//                    break;
-//                }
-//            }
-//
-//            return false;
-//        });
+        lytList.addView(txtList);
 
-        txtList.setOnClickListener(v -> {
-
+        Button btnList = new Button(this.getContext());
+        btnList.setText("Open");
+        btnList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            0.5f
+        ));
+        btnList.setOnClickListener(v -> {
+            Toast.makeText(getContext(), "Clicked", Toast.LENGTH_SHORT).show();
         });
 
-        return txtList;
+//        layoutParams.startToEnd = txtList.getId();
+//        layoutParams.endToEnd = ConstraintLayout.LayoutParams.PARENT_ID;
+//        layoutParams.topToTop = ConstraintLayout.LayoutParams.PARENT_ID;
+//        layoutParams.bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID;
+//        layoutParams.horizontalBias = 1.0f;
+
+        lytList.addView(btnList);
+
+        return lytList;
     }
 
     private View createSeparator() {
