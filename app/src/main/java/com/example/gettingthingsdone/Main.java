@@ -8,6 +8,12 @@ import android.os.Bundle;
 import com.google.android.material.tabs.TabLayout;
 
 public class Main extends AppCompatActivity {
+    private final TodoLists lists = new TodoLists();
+
+    TodoLists getLists() {
+        return lists;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

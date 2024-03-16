@@ -20,15 +20,12 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.util.HashMap;
-
 // https://www.flaticon.com/free-icons/tick
 
 public class Lists extends Fragment {
     private LinearLayout lytLists;
 
-    private HashMap<Integer, TodoList> lists = new HashMap<>();
-    private int counter;
+    private TodoLists lists;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -48,9 +45,19 @@ public class Lists extends Fragment {
 
         Button btnCreateList = view.findViewById(R.id.btnCreateList);
         btnCreateList.setOnClickListener(this::onCreateListButtonPressed);
+
+        Main main = (Main) getActivity();
+        assert main != null;
+        lists = main.getLists();
+
+        createTaskLists();
     }
 
     public void onCreateListButtonPressed(View view) {
+        createListViews(lists.add("<New List " + lists.getCounter() + ">"));
+    }
+
+    private void createListViews(int index) {
         // Remove the placeholder text, if it's there
         if (lytLists.getChildAt(0).getId() == R.id.txtEmpy) {
             lytLists.removeViewAt(0);
@@ -58,19 +65,14 @@ public class Lists extends Fragment {
 
         // Add space, if it's the first one
         if (lytLists.getChildCount() == 0) {
-            lytLists.addView(createSpacing());
+            lytLists.addView(createSpacingView());
         }
 
-        String defaultName = "<New List " + counter + ">";
-        int index = counter++;
-
         // Add the new list
-        lytLists.addView(createSeparator());
-        lytLists.addView(createNewList(index, defaultName));
-        lytLists.addView(createSeparator());
-        lytLists.addView(createSpacing());
-
-        lists.put(index, new TodoList(index, defaultName));
+        lytLists.addView(createSeparatorView());
+        lytLists.addView(createListView(index, "<New List " + index + ">"));
+        lytLists.addView(createSeparatorView());
+        lytLists.addView(createSpacingView());
 
 //        LinearLayout lytList = new LinearLayout(this.getContext());
 //        lytList.setOrientation(LinearLayout.HORIZONTAL);
@@ -88,7 +90,7 @@ public class Lists extends Fragment {
     }
 
     @SuppressLint("SetTextI18n")
-    private View createNewList(int id, String name) {
+    private View createListView(int id, String name) {
         LinearLayout lytList = new LinearLayout(this.getContext());
         lytList.setOrientation(LinearLayout.HORIZONTAL);
         lytList.setGravity(Gravity.END);
@@ -124,7 +126,7 @@ public class Lists extends Fragment {
         return lytList;
     }
 
-    private View createSeparator() {
+    private View createSeparatorView() {
         View lineSeparator = new View(getContext());
         lineSeparator.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,2));
         lineSeparator.setBackgroundColor(Color.parseColor("#CCCCCC"));
@@ -132,12 +134,18 @@ public class Lists extends Fragment {
         return lineSeparator;
     }
 
-    private View createSpacing() {
+    private View createSpacingView() {
         int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
 
         View spacing = new View(getContext());
         spacing.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,height));
 
         return spacing;
+    }
+
+    private void createTaskLists() {
+        for (int i = 0; i < lists.getCounter(); i++) {
+            createListViews(i);
+        }
     }
 }
