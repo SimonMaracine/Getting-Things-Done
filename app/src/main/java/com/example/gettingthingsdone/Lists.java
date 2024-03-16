@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -18,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 // https://www.flaticon.com/free-icons/tick
 
@@ -46,9 +46,7 @@ public class Lists extends Fragment {
         Button btnCreateList = view.findViewById(R.id.btnCreateList);
         btnCreateList.setOnClickListener(this::onCreateListButtonPressed);
 
-        Main main = (Main) getActivity();
-        assert main != null;
-        lists = main.getLists();
+        lists = ((Main) requireActivity()).getLists();
 
         createTaskLists();
     }
@@ -91,7 +89,7 @@ public class Lists extends Fragment {
 
     @SuppressLint("SetTextI18n")
     private View createListView(int id, String name) {
-        LinearLayout lytList = new LinearLayout(this.getContext());
+        LinearLayout lytList = new LinearLayout(getContext());
         lytList.setOrientation(LinearLayout.HORIZONTAL);
         lytList.setGravity(Gravity.END);
 
@@ -110,7 +108,7 @@ public class Lists extends Fragment {
 
         lytList.addView(txtList);
 
-        Button btnList = new Button(this.getContext());
+        Button btnList = new Button(getContext());
         btnList.setText("Open");
         btnList.setLayoutParams(new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
@@ -118,7 +116,16 @@ public class Lists extends Fragment {
             0.25f
         ));
         btnList.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Clicked list " + id, Toast.LENGTH_SHORT).show();
+            Bundle args = new Bundle();
+            args.putInt("listIndex", id);
+
+            requireActivity()
+                .getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.fragMain, List.class, args)
+                .setTransition(FragmentTransaction.TRANSIT_FRAGMENT_OPEN)
+                .addToBackStack(null)
+                .commit();
         });
 
         lytList.addView(btnList);
