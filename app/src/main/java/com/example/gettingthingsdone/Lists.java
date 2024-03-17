@@ -43,8 +43,7 @@ public class Lists extends Fragment {
 
         lytLists = view.findViewById(R.id.lytLists);
 
-        Button btnCreateList = view.findViewById(R.id.btnCreateList);
-        btnCreateList.setOnClickListener(this::onCreateListButtonPressed);
+        view.findViewById(R.id.btnCreateList).setOnClickListener(this::onCreateListButtonPressed);
 
         lists = ((Main) requireActivity()).getLists();
 
@@ -52,10 +51,11 @@ public class Lists extends Fragment {
     }
 
     public void onCreateListButtonPressed(View view) {
-        createListViews(lists.add("<New List " + lists.getCounter() + ">"));
+        String name = "<New List " + lists.getCounter() + ">";
+        createListViews(lists.add(name), name);
     }
 
-    private void createListViews(int index) {
+    private void createListViews(int index, String name) {
         // Remove the placeholder text, if it's there
         if (lytLists.getChildAt(0).getId() == R.id.txtEmpy) {
             lytLists.removeViewAt(0);
@@ -68,7 +68,7 @@ public class Lists extends Fragment {
 
         // Add the new list
         lytLists.addView(createSeparatorView());
-        lytLists.addView(createListView(index, "<New List " + index + ">"));
+        lytLists.addView(createListView(index, name));
         lytLists.addView(createSeparatorView());
         lytLists.addView(createSpacingView());
 
@@ -152,7 +152,7 @@ public class Lists extends Fragment {
 
     private void createTaskLists() {
         for (int i = 0; i < lists.getCounter(); i++) {
-            createListViews(i);
+            createListViews(i, lists.get(i).name);
         }
     }
 }

@@ -29,12 +29,9 @@ public class List extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        EditText inpName = view.findViewById(R.id.inpName);
-        inpName.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                list.name = ((EditText) v).getText().toString();
-            }
-        });
+        ((EditText) view.findViewById(R.id.inpName)).setText(list.name);
+
+        view.findViewById(R.id.btnAddTask).setOnClickListener(this::onAddTaskButtonPressed);
     }
 
     @Override
@@ -42,7 +39,14 @@ public class List extends Fragment {
         return inflater.inflate(R.layout.fragment_list, container, false);
     }
 
-    public void on(View view) {
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        list.name = ((EditText) requireActivity().findViewById(R.id.inpName)).getText().toString();
+    }
+
+    public void onAddTaskButtonPressed(View view) {
 
     }
 }
