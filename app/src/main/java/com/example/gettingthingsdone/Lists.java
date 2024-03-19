@@ -20,8 +20,6 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-// https://www.flaticon.com/free-icons/tick
-
 public class Lists extends Fragment {
     private LinearLayout lytLists;
 
@@ -47,7 +45,7 @@ public class Lists extends Fragment {
 
         lists = ((Main) requireActivity()).getLists();
 
-        createTaskLists();
+        createPresentLists();
     }
 
     public void onCreateListButtonPressed(View view) {
@@ -67,33 +65,17 @@ public class Lists extends Fragment {
         }
 
         // Add the new list
-        lytLists.addView(createSeparatorView());
         lytLists.addView(createListView(index, name));
-        lytLists.addView(createSeparatorView());
         lytLists.addView(createSpacingView());
-
-//        LinearLayout lytList = new LinearLayout(this.getContext());
-//        lytList.setOrientation(LinearLayout.HORIZONTAL);
-//
-//        TextView txtList = new TextView(this.getContext());
-//        txtList.setText("<New List>");
-//
-//        lytList.addView(txtList);
-//
-//        ImageButton btnList = new ImageButton(this.getContext());
-//        btnList.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.checked, requireContext().getTheme()));
-//        btnList.setOnClickListener(null);
-
-//        lytLists.addView(lytList);
     }
 
     @SuppressLint("SetTextI18n")
-    private View createListView(int id, String name) {
+    private View createListView(int index, String name) {
         LinearLayout lytList = new LinearLayout(getContext());
         lytList.setOrientation(LinearLayout.HORIZONTAL);
         lytList.setGravity(Gravity.END);
 
-        int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+        int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
         int horizontalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
 
         TextView txtList = new TextView(getContext());
@@ -103,7 +85,7 @@ public class Lists extends Fragment {
         txtList.setLayoutParams(new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            1.0f
+            0.8f
         ));
 
         lytList.addView(txtList);
@@ -113,11 +95,11 @@ public class Lists extends Fragment {
         btnList.setLayoutParams(new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            0.25f
+            0.2f
         ));
         btnList.setOnClickListener(v -> {
             Bundle args = new Bundle();
-            args.putInt("listIndex", id);
+            args.putInt("listIndex", index);
 
             requireActivity()
                 .getSupportFragmentManager()
@@ -145,14 +127,14 @@ public class Lists extends Fragment {
         int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
 
         View spacing = new View(getContext());
-        spacing.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,height));
+        spacing.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, height));
 
         return spacing;
     }
 
-    private void createTaskLists() {
+    private void createPresentLists() {
         for (int i = 0; i < lists.getCounter(); i++) {
-            createListViews(i, lists.get(i).name);
+            createListViews(i, lists.get(i).getName());
         }
     }
 }

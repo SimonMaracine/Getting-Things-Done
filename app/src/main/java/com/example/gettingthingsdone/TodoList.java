@@ -3,12 +3,42 @@ package com.example.gettingthingsdone;
 import java.util.ArrayList;
 
 class TodoList {
-    int id;
-    String name;
-    ArrayList<TodoTask> tasks;
+    private final int index;
+    private String name;
+    private final ArrayList<TodoTask> tasks = new ArrayList<>();
 
-    TodoList(int id, String name) {
-        this.id = id;
+    TodoList(int index, String name) {
+        this.index = index;
         this.name = name;
+    }
+
+    int addTask(String title) {
+        TodoTask task = new TodoTask();
+        task.title = title;
+        task.description = "";
+
+        tasks.add(task);
+
+        return tasks.size() - 1;
+    }
+
+    TodoTask getTask(int i) {
+        return tasks.get(i);
+    }
+
+    int getIndex() {
+        return index;
+    }
+
+    String getName() {
+        return name;
+    }
+
+    void setName(String name) {
+        this.name = name;
+    }
+
+    int getCount() {
+        return tasks.size();
     }
 }
