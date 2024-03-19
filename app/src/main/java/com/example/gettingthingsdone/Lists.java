@@ -49,7 +49,7 @@ public class Lists extends Fragment {
     }
 
     public void onCreateListButtonPressed(View view) {
-        String name = "<New List " + lists.getCounter() + ">";
+        String name = "<List " + lists.getCounter() + ">";
         createListViews(lists.add(name), name);
     }
 
@@ -83,9 +83,9 @@ public class Lists extends Fragment {
         txtList.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
         txtList.setPadding(horizontalPadding, verticalPadding, 0, verticalPadding);
         txtList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            0.8f
+            0.75f
         ));
 
         lytList.addView(txtList);
@@ -93,9 +93,9 @@ public class Lists extends Fragment {
         Button btnList = new Button(getContext());
         btnList.setText("Open");
         btnList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            ConstraintLayout.LayoutParams.WRAP_CONTENT,
-            0.2f
+            0.25f
         ));
         btnList.setOnClickListener(v -> {
             Bundle args = new Bundle();

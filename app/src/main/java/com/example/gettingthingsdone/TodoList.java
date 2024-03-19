@@ -14,8 +14,7 @@ class TodoList {
 
     int addTask(String title) {
         TodoTask task = new TodoTask();
-        task.title = title;
-        task.description = "";
+        task.content = title;
 
         tasks.add(task);
 

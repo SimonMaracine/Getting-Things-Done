@@ -17,13 +17,15 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.TextView;
+
+import java.util.ArrayList;
 
 // https://www.flaticon.com/free-icons/tick
 // https://www.flaticon.com/free-icons/cross
 
 public class List extends Fragment {
     private LinearLayout lytTasks;
+    private final ArrayList<EditText> inpTasks = new ArrayList<>();
 
     private TodoList list;
 
@@ -64,14 +66,18 @@ public class List extends Fragment {
         super.onStop();
 
         list.setName(((EditText) requireActivity().findViewById(R.id.inpName)).getText().toString());
+
+        for (int i = 0; i < list.getCount(); i++) {
+            list.getTask(i).content = inpTasks.get(i).getText().toString();
+        }
     }
 
     public void onAddTaskButtonPressed(View view) {
-        String name = "<New Task " + list.getCount() + ">";
-        createTaskViews(list.addTask(name), name);
+        String name = "<Task " + list.getCount() + ">";
+        createTaskViews(list.addTask(name), name, false);
     }
 
-    private void createTaskViews(int index, String name) {
+    private void createTaskViews(int index, String name, boolean done) {
         // Remove the placeholder text, if it's there
         if (lytTasks.getChildAt(0).getId() == R.id.txtEmptyT) {
             lytTasks.removeViewAt(0);
@@ -83,34 +89,36 @@ public class List extends Fragment {
         }
 
         // Add the new list
-        lytTasks.addView(createTaskView(index, name));
+        lytTasks.addView(createTaskView(index, name, done));
         lytTasks.addView(createSpacingView());
     }
 
-    private View createTaskView(int index, String name) {
+    private View createTaskView(int index, String name, boolean done) {
         LinearLayout lytTask = new LinearLayout(this.getContext());
         lytTask.setOrientation(LinearLayout.HORIZONTAL);
         lytTask.setGravity(Gravity.END);
 
         int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
 
-        TextView txtTask = new TextView(this.getContext());
-        txtTask.setText(name);
-        txtTask.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
-        txtTask.setPadding(0, verticalPadding, 0, verticalPadding);
-        txtTask.setLayoutParams(new LinearLayout.LayoutParams(
-            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+        EditText inpTask = new EditText(this.getContext());
+        inpTask.setText(name);
+        inpTask.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
+        inpTask.setPadding(0, verticalPadding, 0, verticalPadding);
+        inpTask.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             0.75f
         ));
 
-        lytTask.addView(txtTask);
+        lytTask.addView(inpTask);
+
+        inpTasks.add(inpTask);
 
         ImageButton btnTask = new ImageButton(this.getContext());
-        btnTask.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.cancel, requireContext().getTheme()));
-        btnTask.setTag(DRAWABLE_CANCEL);
+        btnTask.setImageDrawable(ResourcesCompat.getDrawable(getResources(), done ? R.drawable.checked : R.drawable.cancel, requireContext().getTheme()));
+        btnTask.setTag(done ? DRAWABLE_CHECKED : DRAWABLE_CANCEL);
         btnTask.setLayoutParams(new LinearLayout.LayoutParams(
-            0,
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
             ConstraintLayout.LayoutParams.MATCH_PARENT,
             0.25f
         ));
@@ -122,10 +130,12 @@ public class List extends Fragment {
                 case DRAWABLE_CANCEL:
                     btn.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.checked, requireContext().getTheme()));
                     btnTask.setTag(DRAWABLE_CHECKED);
+                    list.getTask(index).done = true;
                     break;
                 case DRAWABLE_CHECKED:
                     btn.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.cancel, requireContext().getTheme()));
                     btnTask.setTag(DRAWABLE_CANCEL);
+                    list.getTask(index).done = false;
                     break;
                 default:
                     assert false;
@@ -148,7 +158,7 @@ public class List extends Fragment {
 
     private void createPresentTasks() {
         for (int i = 0; i < list.getCount(); i++) {
-            createTaskViews(i, list.getTask(i).title);
+            createTaskViews(i, list.getTask(i).content, list.getTask(i).done);
         }
     }
 }
