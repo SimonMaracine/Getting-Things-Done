@@ -10,9 +10,14 @@ import com.google.android.material.tabs.TabLayout;
 
 public class Main extends AppCompatActivity {
     private final TodoLists lists = new TodoLists();
+    private final TodoMotivational motivational = new TodoMotivational();
 
     TodoLists getLists() {
         return lists;
+    }
+
+    TodoMotivational getMotivational() {
+        return motivational;
     }
 
     @Override
