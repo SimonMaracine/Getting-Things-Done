@@ -1,6 +1,7 @@
 package com.example.gettingthingsdone;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
@@ -25,6 +26,7 @@ public class Main extends AppCompatActivity {
             public void onTabSelected(TabLayout.Tab tab) {
                 switch (tab.getPosition()) {
                     case 0:
+                        getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragMain, Lists.class, null)
@@ -32,6 +34,7 @@ public class Main extends AppCompatActivity {
                             .commit();
                         break;
                     case 1:
+                        getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragMain, Motivational.class, null)
@@ -39,6 +42,7 @@ public class Main extends AppCompatActivity {
                             .commit();
                         break;
                     case 2:
+                        getSupportFragmentManager().popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         getSupportFragmentManager()
                             .beginTransaction()
                             .replace(R.id.fragMain, Settings.class, null)
