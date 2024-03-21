@@ -1,4 +1,4 @@
-package com.example.gettingthingsdone;
+package com.simondev.gettingthingsdone;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.fragment.app.FragmentManager;

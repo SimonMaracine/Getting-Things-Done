@@ -1,4 +1,4 @@
-package com.example.gettingthingsdone;
+package com.simondev.gettingthingsdone;
 
 public class TodoMotivational {
     String paragraph = "Motivational paragraph...";

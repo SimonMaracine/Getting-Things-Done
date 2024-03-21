@@ -1,4 +1,4 @@
-package com.example.gettingthingsdone;
+package com.simondev.gettingthingsdone;
 
 import android.os.Bundle;
 

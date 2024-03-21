@@ -1,4 +1,4 @@
-package com.example.gettingthingsdone;
+package com.simondev.gettingthingsdone;
 
 import android.annotation.SuppressLint;
 import android.graphics.Color;
@@ -91,7 +91,7 @@ public class Lists extends Fragment {
         lytList.addView(txtList);
 
         Button btnList = new Button(getContext());
-        btnList.setText("Open");
+        btnList.setText("View");
         btnList.setLayoutParams(new LinearLayout.LayoutParams(
             ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
