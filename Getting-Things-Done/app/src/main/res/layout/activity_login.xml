@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFAFF"
+    android:background="@color/theme_whiteish"
     android:paddingHorizontal="8dp"
     android:paddingVertical="8dp"
     tools:context="com.simondev.gettingthingsdone.Login">

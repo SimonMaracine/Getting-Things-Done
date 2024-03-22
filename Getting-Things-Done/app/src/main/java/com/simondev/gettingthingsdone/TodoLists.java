@@ -1,16 +1,13 @@
 package com.simondev.gettingthingsdone;
 
-import java.util.HashMap;
+import androidx.annotation.NonNull;
 
-public class TodoLists {
-    private final HashMap<Integer, TodoList> lists = new HashMap<>();
+import java.util.Iterator;
+import java.util.TreeMap;
+
+class TodoLists implements Iterable<TodoList> {
+    private final TreeMap<Integer, TodoList> lists = new TreeMap<>();
     private int counter;
-
-    int add(TodoList list) {
-        lists.put(counter, list);
-
-        return counter++;
-    }
 
     int add(String name) {
         lists.put(counter, new TodoList(counter, name));
@@ -24,5 +21,11 @@ public class TodoLists {
 
     int getCounter() {
         return counter;
+    }
+
+    @NonNull
+    @Override
+    public Iterator<TodoList> iterator() {
+        return lists.values().iterator();
     }
 }

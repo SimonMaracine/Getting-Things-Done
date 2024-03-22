@@ -1,11 +1,15 @@
 package com.simondev.gettingthingsdone;
 
-import java.util.ArrayList;
+import androidx.annotation.NonNull;
 
-class TodoList {
-    private final int index;
+import java.util.Iterator;
+import java.util.TreeMap;
+
+class TodoList implements Iterable<TodoTask> {
+    final int index;
     private String name;
-    private final ArrayList<TodoTask> tasks = new ArrayList<>();
+    private final TreeMap<Integer, TodoTask> tasks = new TreeMap<>();
+    private int counter;
 
     TodoList(int index, String name) {
         this.index = index;
@@ -13,20 +17,16 @@ class TodoList {
     }
 
     int addTask(String title) {
-        TodoTask task = new TodoTask();
+        TodoTask task = new TodoTask(counter);
         task.content = title;
 
-        tasks.add(task);
+        tasks.put(counter, task);
 
-        return tasks.size() - 1;
+        return counter++;
     }
 
     TodoTask getTask(int i) {
         return tasks.get(i);
-    }
-
-    int getIndex() {
-        return index;
     }
 
     String getName() {
@@ -37,7 +37,13 @@ class TodoList {
         this.name = name;
     }
 
-    int getCount() {
-        return tasks.size();
+    int getCounter() {
+        return counter;
+    }
+
+    @NonNull
+    @Override
+    public Iterator<TodoTask> iterator() {
+        return tasks.values().iterator();
     }
 }

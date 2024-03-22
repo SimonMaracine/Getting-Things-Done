@@ -1,7 +1,6 @@
 package com.simondev.gettingthingsdone;
 
 import android.annotation.SuppressLint;
-import android.graphics.Color;
 
 import android.os.Bundle;
 
@@ -54,17 +53,14 @@ public class Lists extends Fragment {
     }
 
     private void createListViews(int index, String name) {
-        // Remove the placeholder text, if it's there
         if (lytLists.getChildAt(0).getId() == R.id.txtEmpy) {
             lytLists.removeViewAt(0);
         }
 
-        // Add space, if it's the first one
         if (lytLists.getChildCount() == 0) {
             lytLists.addView(createSpacingView());
         }
 
-        // Add the new list
         lytLists.addView(createListView(index, name));
         lytLists.addView(createSpacingView());
     }
@@ -115,14 +111,6 @@ public class Lists extends Fragment {
         return lytList;
     }
 
-    private View createSeparatorView() {
-        View lineSeparator = new View(getContext());
-        lineSeparator.setLayoutParams(new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,2));
-        lineSeparator.setBackgroundColor(Color.parseColor("#CCCCCC"));
-
-        return lineSeparator;
-    }
-
     private View createSpacingView() {
         int height = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 24, getResources().getDisplayMetrics());
 
@@ -133,8 +121,8 @@ public class Lists extends Fragment {
     }
 
     private void createPresentLists() {
-        for (int i = 0; i < lists.getCounter(); i++) {
-            createListViews(i, lists.get(i).getName());
+        for (TodoList list : lists) {
+            createListViews(list.index, list.getName());
         }
     }
 }

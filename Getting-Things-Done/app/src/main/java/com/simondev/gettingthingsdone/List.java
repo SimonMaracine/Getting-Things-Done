@@ -18,14 +18,14 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 
-import java.util.ArrayList;
+import java.util.HashMap;
 
 // https://www.flaticon.com/free-icons/tick
 // https://www.flaticon.com/free-icons/cross
 
 public class List extends Fragment {
     private LinearLayout lytTasks;
-    private final ArrayList<EditText> inpTasks = new ArrayList<>();
+    private final HashMap<Integer, EditText> inpTasks = new HashMap<>();
 
     private TodoList list;
 
@@ -67,28 +67,25 @@ public class List extends Fragment {
 
         list.setName(((EditText) requireActivity().findViewById(R.id.inpName)).getText().toString());
 
-        for (int i = 0; i < list.getCount(); i++) {
-            list.getTask(i).content = inpTasks.get(i).getText().toString();
+        for (TodoTask task : list) {
+            task.content = inpTasks.get(task.index).getText().toString();
         }
     }
 
     public void onAddTaskButtonPressed(View view) {
-        String name = "<Task " + list.getCount() + ">";
+        String name = "<Task " + list.getCounter() + ">";
         createTaskViews(list.addTask(name), name, false);
     }
 
     private void createTaskViews(int index, String name, boolean done) {
-        // Remove the placeholder text, if it's there
         if (lytTasks.getChildAt(0).getId() == R.id.txtEmptyT) {
             lytTasks.removeViewAt(0);
         }
 
-        // Add space, if it's the first one
         if (lytTasks.getChildCount() == 0) {
             lytTasks.addView(createSpacingView());
         }
 
-        // Add the new list
         lytTasks.addView(createTaskView(index, name, done));
         lytTasks.addView(createSpacingView());
     }
@@ -109,10 +106,11 @@ public class List extends Fragment {
             ConstraintLayout.LayoutParams.WRAP_CONTENT,
             0.75f
         ));
+        inpTask.setSingleLine(false);
 
         lytTask.addView(inpTask);
 
-        inpTasks.add(inpTask);
+        inpTasks.put(index, inpTask);
 
         ImageButton btnTask = new ImageButton(this.getContext());
         btnTask.setImageDrawable(ResourcesCompat.getDrawable(getResources(), done ? R.drawable.checked : R.drawable.cancel, requireContext().getTheme()));
@@ -157,8 +155,8 @@ public class List extends Fragment {
     }
 
     private void createPresentTasks() {
-        for (int i = 0; i < list.getCount(); i++) {
-            createTaskViews(i, list.getTask(i).content, list.getTask(i).done);
+        for (TodoTask task : list) {
+            createTaskViews(task.index, task.content, task.done);
         }
     }
 }
