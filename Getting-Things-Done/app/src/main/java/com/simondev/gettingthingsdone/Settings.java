@@ -3,6 +3,7 @@ package com.simondev.gettingthingsdone;
 import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -52,7 +53,7 @@ public class Settings extends Fragment {
         createPresentTasks();
     }
 
-    private void createTaskViews(int index, String name) {
+    private void createListViews(int listIndex, String name) {
         if (lytAllTasks.getChildAt(0).getId() == R.id.txtEmptyA) {
             lytAllTasks.removeViewAt(0);
         }
@@ -61,12 +62,55 @@ public class Settings extends Fragment {
             lytAllTasks.addView(createSpacingView());
         }
 
-        lytAllTasks.addView(createTaskView(index, name));
+        lytAllTasks.addView(createListView(listIndex, name));
+        lytAllTasks.addView(createSpacingView());
+    }
+
+    private void createTaskViews(int listIndex, int taskIndex, String name) {
+        lytAllTasks.addView(createTaskView(listIndex, taskIndex, name));
         lytAllTasks.addView(createSpacingView());
     }
 
     @SuppressLint("SetTextI18n")
-    private View createTaskView(int index, String name) {
+    private View createListView(int listIndex, String name) {
+        LinearLayout lytList = new LinearLayout(this.getContext());
+        lytList.setOrientation(LinearLayout.HORIZONTAL);
+        lytList.setGravity(Gravity.END);
+
+        int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 8, getResources().getDisplayMetrics());
+
+        TextView txtList = new TextView(this.getContext());
+        txtList.setText(name);
+        txtList.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
+        txtList.setTypeface(null, Typeface.BOLD);
+        txtList.setPadding(0, verticalPadding, 0, verticalPadding);
+        txtList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT,
+            0.75f
+        ));
+
+        lytList.addView(txtList);
+
+        Button btnList = new Button(this.getContext());
+        btnList.setText("Delete");
+        btnList.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_CONSTRAINT,
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            0.25f
+        ));
+        btnList.setOnClickListener(v -> {
+            lists.remove(listIndex);
+            recreatePresentTasks();
+        });
+
+        lytList.addView(btnList);
+
+        return lytList;
+    }
+
+    @SuppressLint("SetTextI18n")
+    private View createTaskView(int listIndex, int taskIndex, String name) {
         LinearLayout lytTask = new LinearLayout(this.getContext());
         lytTask.setOrientation(LinearLayout.HORIZONTAL);
         lytTask.setGravity(Gravity.END);
@@ -93,7 +137,8 @@ public class Settings extends Fragment {
             0.25f
         ));
         btnTask.setOnClickListener(v -> {
-
+            lists.get(listIndex).removeTask(taskIndex);
+            recreatePresentTasks();
         });
 
         lytTask.addView(btnTask);
@@ -124,14 +169,16 @@ public class Settings extends Fragment {
         while (iter.hasNext()) {
             TodoList list = iter.next();
 
+            createListViews(list.index, list.getName());
+
             for (TodoTask task : list) {
                 String content = task.content;
 
-                if (content.length() > 12) {
-                    content = content.substring(0, 12) + "...";
+                if (content.length() > 10) {
+                    content = content.substring(0, 10) + "...";
                 }
 
-                createTaskViews(task.index, content);
+                createTaskViews(list.index, task.index, content);
             }
 
             if (iter.hasNext()) {
@@ -139,5 +186,27 @@ public class Settings extends Fragment {
                 lytAllTasks.addView(createSpacingView());
             }
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private void recreatePresentTasks() {
+        lytAllTasks.removeAllViews();
+
+        int verticalPadding = (int) TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 16, getResources().getDisplayMetrics());
+
+        TextView txtEmptyA = new TextView(requireContext());
+        txtEmptyA.setId(R.id.txtEmptyA);
+        txtEmptyA.setText("Empty");
+        txtEmptyA.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        txtEmptyA.setTextAppearance(com.google.android.material.R.style.TextAppearance_AppCompat_Medium);
+        txtEmptyA.setPadding(0, verticalPadding, 0, verticalPadding);
+        txtEmptyA.setLayoutParams(new LinearLayout.LayoutParams(
+            ConstraintLayout.LayoutParams.MATCH_PARENT,
+            ConstraintLayout.LayoutParams.WRAP_CONTENT
+        ));
+
+        lytAllTasks.addView(txtEmptyA);
+
+        createPresentTasks();
     }
 }

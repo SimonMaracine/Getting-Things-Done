@@ -15,6 +15,10 @@ class TodoLists implements Iterable<TodoList> {
         return counter++;
     }
 
+    void remove(int index) {
+        lists.remove(index);
+    }
+
     TodoList get(int index) {
         return lists.get(index);
     }
