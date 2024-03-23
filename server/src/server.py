@@ -5,13 +5,18 @@ import queue
 import message
 
 
+class ClientDisconnect(RuntimeError):
+    pass
+
+
 class Server:
     HOST = "localhost"
     PORT = 1922
 
     def __init__(self):
         self._listening = True
-        self._message_queue: queue.Queue[message.Message] = queue.Queue()
+        self._incoming_messages: queue.Queue[message.Message] = queue.Queue()
+        self._outgoing_messages: queue.Queue[message.Message] = queue.Queue()
 
     def run(self):
         print("Starting server...")
@@ -21,25 +26,47 @@ class Server:
 
         while True:
             try:
-                message = self._message_queue.get(True, 2.0)
-            except queue.Empty:
-                continue
+                self._process_incoming_messages()
             except KeyboardInterrupt:
+                print()
+                self._listening = False
                 break
 
         listening_thread.join()
 
-        print("Stopped server...")
+        print("Stopped server")
+
+    def _process_incoming_messages(self):
+        try:
+            msg = self._incoming_messages.get(True, 2.0)
+        except queue.Empty:
+            return
+
+        match msg.header.msg_type:
+            case message.MsgType.ClientPing:
+                print(msg.payload["msg"])
+                self._send_message(message.MsgType.ServerPing, {"msg": msg.payload["msg"]})
+
+    def _send_message(self, msg_type: int, payload: dict):
+        self._outgoing_messages.put(message.Message(message.Header(msg_type, -1), payload))
 
     def _listen_for_connections(self):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listening_socket:
+            listening_socket.settimeout(3.0)
             listening_socket.bind((self.HOST, self.PORT))  # TODO error handling
             listening_socket.listen()
 
             print(f"Listening on {(self.HOST, self.PORT)}")
 
             while self._listening:
-                connection, address = listening_socket.accept()  # FIXME
+                try:
+                    connection, address = listening_socket.accept()
+                except BlockingIOError:
+                    continue
+                except TimeoutError:
+                    continue
+
+                connection.setblocking(False)
 
                 threading.Thread(target=self._handle_connection, args=(connection, address)).start()
 
@@ -48,20 +75,51 @@ class Server:
             print(f"Client connected: {(connection, address)}")
 
             while True:
-                message = self._receive_message(connection)
-
-                if message is None:
+                try:
+                    self._receive_next_message(connection)
+                    self._send_next_message(connection)
+                except ClientDisconnect:
                     break
-
-                self._message_queue.put(message)
 
         print(f"Disconnected: {address}")
 
-    def _receive_message(self, connection: socket.socket):
-        data = connection.recv(2)
+    def _receive_next_message(self, connection: socket.socket):
+        try:
+            data = connection.recv(4)
+        except TimeoutError:
+            return
 
         if not data:
-            # Client disconnected
-            return None
+            raise ClientDisconnect()
 
-        # TODO
+        try:
+            header = message.parse_header(data)
+        except message.MessageError as err:
+            print(err)
+            return
+
+        try:
+            data = connection.recv(header.payload_size)
+        except TimeoutError:
+            return
+
+        if not data:
+            raise ClientDisconnect()
+
+        try:
+            payload = message.parse_payload(data, header)
+        except message.MessageError as err:
+            print(err)
+            return
+
+        self._incoming_messages.put(message.Message(header, payload))
+
+    def _send_next_message(self, connection: socket.socket):
+        msg = self._outgoing_messages.get(False)
+
+        payload = message.dump_payload(msg.payload)
+
+        msg.header.payload_size = len(payload)
+        header = message.dump_header(msg.header)
+
+        connection.sendall(header + payload)
