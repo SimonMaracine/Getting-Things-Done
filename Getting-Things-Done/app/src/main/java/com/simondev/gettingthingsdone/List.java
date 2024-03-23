@@ -72,7 +72,7 @@ public class List extends Fragment {
         }
     }
 
-    public void onAddTaskButtonPressed(View view) {
+    private void onAddTaskButtonPressed(View view) {
         String name = "<Task " + list.getCounter() + ">";
         createTaskViews(list.addTask(name), name, false);
     }

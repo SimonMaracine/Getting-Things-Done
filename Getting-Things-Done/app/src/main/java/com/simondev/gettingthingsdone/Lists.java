@@ -47,7 +47,7 @@ public class Lists extends Fragment {
         createPresentLists();
     }
 
-    public void onCreateListButtonPressed(View view) {
+    private void onCreateListButtonPressed(View view) {
         String name = "<List " + lists.getCounter() + ">";
         createListViews(lists.add(name), name);
     }
