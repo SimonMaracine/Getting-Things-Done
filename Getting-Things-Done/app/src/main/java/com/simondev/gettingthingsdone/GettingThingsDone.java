@@ -2,7 +2,7 @@ package com.simondev.gettingthingsdone;
 
 import android.app.Application;
 
-class GettingThingsDone extends Application {
+public class GettingThingsDone extends Application {
     private ServerConnection serverConnection;
 
     ServerConnection createServerConnection() {

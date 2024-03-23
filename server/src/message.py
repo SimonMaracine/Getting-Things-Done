@@ -18,13 +18,13 @@ class MsgType:
         return MsgType._ClientFirst <= msg_type <= MsgType._ClientLast
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class Header:
     msg_type: int
     payload_size: int
 
 
-@dataclasses.dataclass(frozen=True)
+@dataclasses.dataclass
 class Message:
     header: Header
     payload: dict
@@ -42,10 +42,10 @@ def parse_header(data: bytes) -> Header:
     payload_size = int.from_bytes(data[2:])
 
     if not MsgType.in_range_client(msg_type):
-        raise MessageError("Malformed header: message type")
+        raise MessageError(f"Malformed header: message type: {msg_type}")
 
     if not (0 <= payload_size <= MAX_PAYLOAD_SIZE):
-        raise MessageError("Malformed header: payload size")
+        raise MessageError(f"Malformed header: payload size: {payload_size}")
 
     return Header(msg_type, payload_size)
 
@@ -82,4 +82,4 @@ def dump_header(header: Header) -> bytes:
 
 
 def dump_payload(payload: dict) -> bytes:
-    return bytes(json.dumps(payload))
+    return bytes(json.dumps(payload), encoding="utf8")

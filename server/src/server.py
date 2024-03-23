@@ -91,6 +91,8 @@ class Server:
             data = connection.recv(message.HEADER_SIZE)
         except TimeoutError:
             return
+        except BlockingIOError:
+            return
 
         if not data:
             raise ClientDisconnect()
@@ -105,6 +107,8 @@ class Server:
             data = connection.recv(header.payload_size)
         except TimeoutError:
             return
+        except BlockingIOError:
+            return
 
         if not data:
             raise ClientDisconnect()
@@ -118,7 +122,10 @@ class Server:
         self._incoming_messages.put(message.Message(header, payload))
 
     def _send_next_message(self, connection: socket.socket):
-        msg = self._outgoing_messages.get(False)
+        try:
+            msg = self._outgoing_messages.get(False)
+        except queue.Empty:
+            return
 
         payload = message.dump_payload(msg.payload)
 
@@ -126,3 +133,5 @@ class Server:
         header = message.dump_header(msg.header)
 
         connection.sendall(header + payload)
+
+# TODO keep track of connections to close them when Ctrl+C

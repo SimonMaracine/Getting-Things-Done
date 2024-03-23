@@ -13,7 +13,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 class ServerConnection {
-    private final Socket socket;
+    private Socket socket;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
     private final ConcurrentLinkedQueue<Message> incomingMessages = new ConcurrentLinkedQueue<>();
     private final ConcurrentLinkedQueue<Message> outgoingMessages = new ConcurrentLinkedQueue<>();
@@ -22,13 +22,13 @@ class ServerConnection {
     private static final int MAX_PAYLOAD_SIZE = 512 - HEADER_SIZE;
 
     ServerConnection(String host, int port) {
-        try {
-            socket = new Socket(host, port);
-        } catch (IOException e) {
-            throw new RuntimeException("Could not connect to " + host + ": " + e);
-        }
-
         executor.execute(() -> {
+            try {
+                socket = new Socket(host, port);
+            } catch (IOException e) {
+                throw new RuntimeException("Could not connect to " + host + ": " + e);
+            }
+
             InputStreamReader reader;
             OutputStreamWriter writer;
 
@@ -58,6 +58,7 @@ class ServerConnection {
 
     void sendMessage(short msgType, JSONObject payload) {
         Message msg = new Message();
+        msg.header = new Header();
         msg.header.msgType = msgType;
         msg.payload = payload;
 
@@ -202,7 +203,7 @@ class ServerConnection {
     }
 
     private void shortToBytes(byte[] buffer, int offset, short s) {
-        buffer[offset] = (byte) (s);
-        buffer[offset + 1] = (byte) (s >> 8);
+        buffer[offset] = (byte) (s >> 8);
+        buffer[offset + 1] = (byte) (s);
     }
 }
