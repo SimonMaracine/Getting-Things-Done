@@ -2,6 +2,10 @@ import dataclasses
 import json
 
 
+HEADER_SIZE = 4
+MAX_PAYLOAD_SIZE = 512 - HEADER_SIZE
+
+
 class MsgType:
     ClientPing = 1
 
@@ -31,7 +35,7 @@ class MessageError(RuntimeError):
 
 
 def parse_header(data: bytes) -> Header:
-    if len(data) != 4:
+    if len(data) != HEADER_SIZE:
         raise MessageError(f"Not enough bytes for header: {len(data)}")
 
     msg_type = int.from_bytes(data[:2])
@@ -40,7 +44,7 @@ def parse_header(data: bytes) -> Header:
     if not MsgType.in_range_client(msg_type):
         raise MessageError("Malformed header: message type")
 
-    if not (0 <= payload_size < 512):
+    if not (0 <= payload_size <= MAX_PAYLOAD_SIZE):
         raise MessageError("Malformed header: payload size")
 
     return Header(msg_type, payload_size)

@@ -1,17 +1,18 @@
 package com.simondev.gettingthingsdone;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.view.View;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class Login extends AppCompatActivity {
+    private ServerConnection serverConnection;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -19,6 +20,12 @@ public class Login extends AppCompatActivity {
 
         findViewById(R.id.btnLogin).setOnClickListener(this::onLoginButtonPressed);
         findViewById(R.id.btnSignUp).setOnClickListener(this::onSignUpButtonPressed);
+
+        try {
+            serverConnection = ((GettingThingsDone) getApplicationContext()).createServerConnection();
+        } catch (RuntimeException e) {
+            Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
+        }
     }
 
     private void onLoginButtonPressed(View view) {
@@ -32,5 +39,12 @@ public class Login extends AppCompatActivity {
         // TODO send a create account request, then wait for validation and result
 
         Toast.makeText(getApplicationContext(), "Sign up pressed", Toast.LENGTH_SHORT).show();
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("msg", "Hello world");
+        } catch (JSONException ignored) {}
+
+        serverConnection.sendMessage(MsgType.ClientPing, obj);
     }
 }

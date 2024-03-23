@@ -51,12 +51,14 @@ class Server:
         self._outgoing_messages.put(message.Message(message.Header(msg_type, -1), payload))
 
     def _listen_for_connections(self):
+        host = socket.gethostbyname(socket.gethostname())
+
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listening_socket:
             listening_socket.settimeout(3.0)
-            listening_socket.bind((self.HOST, self.PORT))  # TODO error handling
+            listening_socket.bind((host, self.PORT))  # TODO error handling
             listening_socket.listen()
 
-            print(f"Listening on {(self.HOST, self.PORT)}")
+            print(f"Listening on {(host, self.PORT)}")
 
             while self._listening:
                 try:
@@ -77,15 +79,16 @@ class Server:
             while True:
                 try:
                     self._receive_next_message(connection)
-                    self._send_next_message(connection)
                 except ClientDisconnect:
                     break
+
+                self._send_next_message(connection)
 
         print(f"Disconnected: {address}")
 
     def _receive_next_message(self, connection: socket.socket):
         try:
-            data = connection.recv(4)
+            data = connection.recv(message.HEADER_SIZE)
         except TimeoutError:
             return
 
