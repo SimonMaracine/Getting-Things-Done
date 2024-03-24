@@ -74,7 +74,7 @@ class Server:
 
     def _handle_connection(self, connection: socket.socket, address):
         with connection:
-            print(f"Client connected: {(connection, address)}")
+            print(f"Client connected: {address}")
 
             while True:
                 try:

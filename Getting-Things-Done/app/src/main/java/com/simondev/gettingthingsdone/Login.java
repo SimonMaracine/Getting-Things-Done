@@ -23,7 +23,7 @@ public class Login extends AppCompatActivity {
 
         try {
             serverConnection = ((GettingThingsDone) getApplicationContext()).createServerConnection();
-        } catch (RuntimeException e) {
+        } catch (ServerConnectionException e) {
             Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
         }
     }
@@ -40,11 +40,22 @@ public class Login extends AppCompatActivity {
 
         Toast.makeText(getApplicationContext(), "Sign up pressed", Toast.LENGTH_SHORT).show();
 
-        JSONObject obj = new JSONObject();
-        try {
-            obj.put("msg", "Hello world");
-        } catch (JSONException ignored) {}
+        if (serverConnection != null) {
+            JSONObject obj = new JSONObject();
+            try {
+                obj.put("msg", "Hello world");
+            } catch (JSONException ignored) {}
 
-        serverConnection.sendMessage(MsgType.ClientPing, obj);
+            serverConnection.sendMessage(MsgType.ClientPing, obj);
+
+            try {
+                serverConnection.sendReceivePair();
+            } catch (ServerConnectionException e) {
+                Toast.makeText(this, "Could not send-receive messages: " + e, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            serverConnection.receiveMessage();
+        }
     }
 }

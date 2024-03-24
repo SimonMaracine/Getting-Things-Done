@@ -5,12 +5,8 @@ import android.app.Application;
 public class GettingThingsDone extends Application {
     private ServerConnection serverConnection;
 
-    ServerConnection createServerConnection() {
-        try {
-            serverConnection = new ServerConnection("192.168.1.250", 1922);
-        } catch (RuntimeException e) {
-            throw e;
-        }
+    ServerConnection createServerConnection() throws ServerConnectionException {
+        serverConnection = new ServerConnection("192.168.1.250", 1922);
 
         return serverConnection;
     }
