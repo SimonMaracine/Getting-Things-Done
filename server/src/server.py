@@ -1,20 +1,10 @@
 import socket
 import threading
 import queue
-import dataclasses
 
 import message
-
-
-class ClientDisconnect(RuntimeError):
-    pass
-
-
-@dataclasses.dataclass
-class Client:
-    connection: socket.socket
-    thread: threading.Thread
-    finished_serving: bool
+import client
+import context
 
 
 class Server:
@@ -22,12 +12,12 @@ class Server:
 
     def __init__(self):
         self._listening = True
-        self._incoming_messages: queue.Queue[message.Message] = queue.Queue()
-        self._outgoing_messages: queue.Queue[message.Message] = queue.Queue()
 
-        self._clients: dict[int, Client] = {}
+        self._clients: dict[int, client.Client] = {}
         self._clients_counter = 0
         self._clients_mutex = threading.Lock()
+
+        self._ctx = context.Context()
 
     def run(self):
         print("Starting server...")
@@ -37,7 +27,7 @@ class Server:
 
         while True:
             try:
-                self._process_incoming_messages()
+                self._process_clients()
                 self._process_finished_clients()
             except KeyboardInterrupt:
                 self._interrupt()
@@ -45,26 +35,33 @@ class Server:
 
         listening_thread.join()
 
-        # Don't acquire the mutex here
-        for client in self._clients.values():
-            if not client.finished_serving:
-                client.connection.close()
+        with self._clients_mutex:
+            cl: client.Client
+            for cl in self._clients.values():
+                if not cl.is_finished():
+                    cl.close_connection()
 
-        for client in self._clients.values():
-            client.thread.join()
+            for cl in self._clients.values():
+                cl.join_thread()
 
         print("Stopped server")
 
-    def _process_incoming_messages(self):
-        try:
-            msg = self._incoming_messages.get(True, 2.0)
-        except queue.Empty:
-            return
+    def _process_clients(self):
+        with self._clients_mutex:
+            cl: client.Client
+            for cl in self._clients.values():
+                try:
+                    msg = cl.dequeue_message()
+                except queue.Empty:
+                    continue
 
-        match msg.header.msg_type:
-            case message.MsgType.ClientPing:
-                print(msg.payload["msg"])
-                self._send_message(message.MsgType.ServerPing, {"msg": msg.payload["msg"]})
+                match msg.header.msg_type:
+                    case message.MsgType.ClientPing:
+                        self._ctx.process_ping(cl)
+                    case message.MsgType.ClientSignUp:
+                        self._ctx.process_sign_up(cl)
+                    case message.MsgType.ClientLogIn:
+                        self._ctx.process_log_in(cl)
 
     def _interrupt(self):
         print()
@@ -72,18 +69,16 @@ class Server:
 
     def _process_finished_clients(self):
         with self._clients_mutex:
-            finished_clients = []
+            finished_clients: list[int] = []
 
-            for index, client in self._clients.items():
-                if client.finished_serving:
-                    client.thread.join()
+            cl: client.Client
+            for index, cl in self._clients.items():
+                if cl.is_finished():
+                    cl.join_thread()
                     finished_clients.append(index)
 
             for index in finished_clients:
                 del self._clients[index]
-
-    def _send_message(self, msg_type: int, payload: dict):
-        self._outgoing_messages.put(message.Message(message.Header(msg_type, -1), payload))
 
     def _listen_for_connections(self):
         host = socket.gethostbyname(socket.gethostname())
@@ -105,79 +100,29 @@ class Server:
 
                 connection.setblocking(False)
 
-                thread = threading.Thread(target=self._handle_connection, args=(connection, address, self._clients_counter))
+                cl = client.Client(connection)
+
+                thread = threading.Thread(target=self._handle_connection, args=(cl, address))
+
+                cl.set_thread(thread)
 
                 with self._clients_mutex:
-                    self._clients[self._clients_counter] = Client(connection, thread, False)
+                    self._clients[self._clients_counter] = cl
+
                 self._clients_counter += 1
 
                 thread.start()
 
-    def _handle_connection(self, connection: socket.socket, address, index: int):
-        with connection:
+    def _handle_connection(self, cl: client.Client, address):
+        with cl:
             print(f"Client connected: {address}")
 
             while True:
                 try:
-                    self._receive_next_message(connection)
-                except ClientDisconnect:
+                    cl.receive_next_message()
+                except client.ClientDisconnect:
                     break
 
-                self._send_next_message(connection)
-
-        with self._clients_mutex:
-            self._clients[index].finished_serving = True
+                cl.send_next_message()
 
         print(f"Disconnected: {address}")
-
-    def _receive_next_message(self, connection: socket.socket):
-        try:
-            data = connection.recv(message.HEADER_SIZE)
-        except TimeoutError:
-            return
-        except BlockingIOError:
-            return
-        except OSError:
-            raise ClientDisconnect()
-
-        if not data:
-            raise ClientDisconnect()
-
-        try:
-            header = message.parse_header(data)
-        except message.MessageError as err:
-            print(err)
-            return
-
-        try:
-            data = connection.recv(header.payload_size)
-        except TimeoutError:
-            return
-        except BlockingIOError:
-            return
-        except OSError:
-            raise ClientDisconnect()
-
-        if not data:
-            raise ClientDisconnect()
-
-        try:
-            payload = message.parse_payload(data, header)
-        except message.MessageError as err:
-            print(err)
-            return
-
-        self._incoming_messages.put(message.Message(header, payload))
-
-    def _send_next_message(self, connection: socket.socket):
-        try:
-            msg = self._outgoing_messages.get(False)
-        except queue.Empty:
-            return
-
-        payload = message.dump_payload(msg.payload)
-
-        msg.header.payload_size = len(payload)
-        header = message.dump_header(msg.header)
-
-        connection.sendall(header + payload)

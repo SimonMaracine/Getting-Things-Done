@@ -22,10 +22,12 @@ public class Login extends AppCompatActivity {
         findViewById(R.id.btnSignUp).setOnClickListener(this::onSignUpButtonPressed);
 
         try {
-            serverConnection = ((GettingThingsDone) getApplicationContext()).createServerConnection();
+            serverConnection = new ServerConnection("192.168.1.250", 1922);
         } catch (ServerConnectionException e) {
             Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
         }
+
+        ((GettingThingsDone) getApplicationContext()).serverConnection = serverConnection;
     }
 
     private void onLoginButtonPressed(View view) {

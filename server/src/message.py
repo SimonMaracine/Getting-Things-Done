@@ -8,8 +8,14 @@ MAX_PAYLOAD_SIZE = 512 - HEADER_SIZE
 
 class MsgType:
     ClientPing = 1
+    ClientSignUp = 2
+    ClientLogIn = 3
 
     ServerPing = 10
+    ServerSignUpOk = 11
+    ServerSignUpFail = 12
+    ServerLogInOk = 13
+    ServerLogInFail = 14
 
     _ClientFirst = ClientPing
     _ClientLast = ClientPing
