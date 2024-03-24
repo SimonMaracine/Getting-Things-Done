@@ -78,7 +78,7 @@ def parse_payload(data: bytes, header: Header) -> dict:
 
 
 def dump_header(header: Header) -> bytes:
-    return header.msg_type.to_bytes() + header.payload_size.to_bytes()
+    return header.msg_type.to_bytes(2) + header.payload_size.to_bytes(2)
 
 
 def dump_payload(payload: dict) -> bytes:

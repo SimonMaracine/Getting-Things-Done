@@ -132,6 +132,8 @@ class Server:
         msg.header.payload_size = len(payload)
         header = message.dump_header(msg.header)
 
+        print(header)
+
         connection.sendall(header + payload)
 
 # TODO keep track of connections to close them when Ctrl+C

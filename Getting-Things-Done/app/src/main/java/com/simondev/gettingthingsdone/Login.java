@@ -55,7 +55,17 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
-            serverConnection.receiveMessage();
+            Message msg = serverConnection.receiveMessage();
+
+            String message;
+            try {
+                message = msg.payload.getString("msg");
+            } catch (JSONException e) {
+                Toast.makeText(this, "Could not send-receive messages: " + e, Toast.LENGTH_LONG).show();
+                return;
+            }
+
+            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
     }
 }

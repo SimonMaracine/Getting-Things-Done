@@ -199,9 +199,12 @@ class ServerConnection {
         shortToBytes(header, 0, msg.header.msgType);
         shortToBytes(header, 2, msg.header.payloadSize);
 
+        byte[] all = new byte[header.length + payload.length];
+        System.arraycopy(header, 0, all, 0, header.length);
+        System.arraycopy(payload, 0, all, header.length, payload.length);
+
         try {
-            stream.write(header);  // FIXME
-            stream.write(payload);
+            stream.write(all);
             stream.flush();
         } catch (IOException ignored) {
             throw new ServerConnectionException("Could not write to socket");
