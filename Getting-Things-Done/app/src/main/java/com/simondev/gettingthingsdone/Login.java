@@ -49,7 +49,7 @@ public class Login extends AppCompatActivity {
             serverConnection.sendMessage(MsgType.ClientPing, obj);
 
             try {
-                serverConnection.sendReceivePair();
+                serverConnection.sendReceive();
             } catch (ServerConnectionException e) {
                 Toast.makeText(this, "Could not send-receive messages: " + e, Toast.LENGTH_LONG).show();
                 return;
@@ -67,5 +67,8 @@ public class Login extends AppCompatActivity {
 
             Toast.makeText(this, message, Toast.LENGTH_LONG).show();
         }
+
+//        Handler h = new Handler(getMainLooper());
+//        h.post(null);
     }
 }

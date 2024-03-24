@@ -1,6 +1,7 @@
 import socket
 import threading
 import queue
+import dataclasses
 
 import message
 
@@ -9,14 +10,24 @@ class ClientDisconnect(RuntimeError):
     pass
 
 
+@dataclasses.dataclass
+class Client:
+    connection: socket.socket
+    thread: threading.Thread
+    finished_serving: bool
+
+
 class Server:
-    HOST = "localhost"
-    PORT = 1922
+    _PORT = 1922
 
     def __init__(self):
         self._listening = True
         self._incoming_messages: queue.Queue[message.Message] = queue.Queue()
         self._outgoing_messages: queue.Queue[message.Message] = queue.Queue()
+
+        self._clients: dict[int, Client] = {}
+        self._clients_counter = 0
+        self._clients_mutex = threading.Lock()
 
     def run(self):
         print("Starting server...")
@@ -27,12 +38,20 @@ class Server:
         while True:
             try:
                 self._process_incoming_messages()
+                self._process_finished_clients()
             except KeyboardInterrupt:
-                print()
-                self._listening = False
+                self._interrupt()
                 break
 
         listening_thread.join()
+
+        # Don't acquire the mutex here
+        for client in self._clients.values():
+            if not client.finished_serving:
+                client.connection.close()
+
+        for client in self._clients.values():
+            client.thread.join()
 
         print("Stopped server")
 
@@ -47,6 +66,22 @@ class Server:
                 print(msg.payload["msg"])
                 self._send_message(message.MsgType.ServerPing, {"msg": msg.payload["msg"]})
 
+    def _interrupt(self):
+        print()
+        self._listening = False
+
+    def _process_finished_clients(self):
+        with self._clients_mutex:
+            finished_clients = []
+
+            for index, client in self._clients.items():
+                if client.finished_serving:
+                    client.thread.join()
+                    finished_clients.append(index)
+
+            for index in finished_clients:
+                del self._clients[index]
+
     def _send_message(self, msg_type: int, payload: dict):
         self._outgoing_messages.put(message.Message(message.Header(msg_type, -1), payload))
 
@@ -55,10 +90,10 @@ class Server:
 
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listening_socket:
             listening_socket.settimeout(3.0)
-            listening_socket.bind((host, self.PORT))  # TODO error handling
+            listening_socket.bind((host, self._PORT))  # TODO error handling
             listening_socket.listen()
 
-            print(f"Listening on {(host, self.PORT)}")
+            print(f"Listening on {(host, self._PORT)}")
 
             while self._listening:
                 try:
@@ -70,9 +105,15 @@ class Server:
 
                 connection.setblocking(False)
 
-                threading.Thread(target=self._handle_connection, args=(connection, address)).start()
+                thread = threading.Thread(target=self._handle_connection, args=(connection, address, self._clients_counter))
 
-    def _handle_connection(self, connection: socket.socket, address):
+                with self._clients_mutex:
+                    self._clients[self._clients_counter] = Client(connection, thread, False)
+                self._clients_counter += 1
+
+                thread.start()
+
+    def _handle_connection(self, connection: socket.socket, address, index: int):
         with connection:
             print(f"Client connected: {address}")
 
@@ -84,6 +125,9 @@ class Server:
 
                 self._send_next_message(connection)
 
+        with self._clients_mutex:
+            self._clients[index].finished_serving = True
+
         print(f"Disconnected: {address}")
 
     def _receive_next_message(self, connection: socket.socket):
@@ -93,6 +137,8 @@ class Server:
             return
         except BlockingIOError:
             return
+        except OSError:
+            raise ClientDisconnect()
 
         if not data:
             raise ClientDisconnect()
@@ -109,6 +155,8 @@ class Server:
             return
         except BlockingIOError:
             return
+        except OSError:
+            raise ClientDisconnect()
 
         if not data:
             raise ClientDisconnect()
@@ -132,8 +180,4 @@ class Server:
         msg.header.payload_size = len(payload)
         header = message.dump_header(msg.header)
 
-        print(header)
-
         connection.sendall(header + payload)
-
-# TODO keep track of connections to close them when Ctrl+C

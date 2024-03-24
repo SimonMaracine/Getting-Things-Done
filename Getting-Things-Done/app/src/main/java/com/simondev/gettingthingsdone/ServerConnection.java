@@ -4,13 +4,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -30,42 +28,23 @@ class ServerConnection {
         Future<?> future = executor.submit(() -> {
             try {
                 socket = new Socket(host, port);
+                socket.setSoTimeout(3000);
             } catch (IOException e) {
                 throw new ServerConnectionExceptionRT("Could not connect to " + host + ": " + e);
             }
         });
 
-        try {
-            future.get();
-        } catch (ExecutionException e) {
-            throw new ServerConnectionException(e);
-        } catch (InterruptedException e) {
-            throw new ServerConnectionException("Unexpected error occurred in connecting to server: " + e);
-        }
+        awaitFuture(future);
     }
 
-    void sendReceiveLoop() {
-        executor.execute(() -> {
-            while (true) {
-                try {
-                    receiveNextMessage(socket.getInputStream());
-                } catch (ClientDisconnect e) {
-                    break;
-                } catch (ServerConnectionException | IOException e) {
-                    throw new ServerConnectionExceptionRT(e);
-                }
+    void sendReceive() throws ServerConnectionException {
+        Future<?> future = sendReceiveAsync();
 
-                try {
-                    sendNextMessage(socket.getOutputStream());
-                } catch (ServerConnectionException | IOException e) {
-                    throw new ServerConnectionExceptionRT(e);
-                }
-            }
-        });
+        awaitFuture(future);
     }
 
-    void sendReceivePair() throws ServerConnectionException {
-        Future<?> future = executor.submit(() -> {
+    Future<?> sendReceiveAsync() {
+        return executor.submit(() -> {
             boolean received = false;
             boolean sent = false;
 
@@ -74,8 +53,8 @@ class ServerConnection {
                     if (sendNextMessage(socket.getOutputStream())) {
                         sent = true;
                     }
-                } catch (ServerConnectionException | IOException e) {
-                    throw new ServerConnectionExceptionRT(e);
+                } catch (ServerConnectionException | IOException e1) {
+                    throw new ServerConnectionExceptionRT(e1);
                 }
 
                 try {
@@ -83,19 +62,25 @@ class ServerConnection {
                         received = true;
                     }
                 } catch (ClientDisconnect e) {
+                    try {
+                        socket.close();
+                    } catch (IOException ignored) {}
+
                     throw new ServerConnectionExceptionRT("Disconnected from server");
                 } catch (ServerConnectionException | IOException e) {
                     throw new ServerConnectionExceptionRT(e);
                 }
             } while (!received || !sent);
         });
+    }
 
+    void awaitFuture(Future<?> future) throws ServerConnectionException {
         try {
             future.get();
         } catch (ExecutionException e) {
             throw new ServerConnectionException(e);
         } catch (InterruptedException e) {
-            throw new ServerConnectionException("Unexpected error occurred in send-receive pair: " + e);
+            throw new ServerConnectionException("Unexpected error occurred: " + e);
         }
     }
 
@@ -124,65 +109,6 @@ class ServerConnection {
         } catch (IOException ignored) {}
     }
 
-    private boolean receiveNextMessage(InputStream stream) throws ClientDisconnect, ServerConnectionException {
-        byte[] buffer = new byte[HEADER_SIZE];
-        int result;
-
-        try {
-            if (stream.available() == 0) {
-                return false;
-            }
-
-            result = stream.read(buffer, 0, HEADER_SIZE);
-        } catch (IOException e) {
-            throw new ServerConnectionException(e);
-        }
-
-        if (result < 0) {
-            throw new ClientDisconnect();
-        }
-
-        Header header;
-
-        try {
-            header = parseHeader(buffer, result);
-        } catch (ServerConnectionException e) {
-            throw new ServerConnectionException(e);
-        }
-
-        buffer = new byte[header.payloadSize];
-
-        try {
-            if (stream.available() == 0) {
-                return false;
-            }
-
-            result = stream.read(buffer, 0, header.payloadSize);
-        } catch (IOException e) {
-            throw new ServerConnectionException(e);
-        }
-
-        if (result < 0) {
-            throw new ClientDisconnect();
-        }
-
-        JSONObject payload;
-
-        try {
-            payload = parsePayload(buffer, result, header);
-        } catch (ServerConnectionException e) {
-            throw new ServerConnectionException(e);
-        }
-
-        Message msg = new Message();
-        msg.header = header;
-        msg.payload = payload;
-
-        incomingMessages.add(msg);
-
-        return true;
-    }
-
     private boolean sendNextMessage(OutputStream stream) throws ServerConnectionException {
         Message msg = outgoingMessages.poll();
 
@@ -209,6 +135,61 @@ class ServerConnection {
         } catch (IOException ignored) {
             throw new ServerConnectionException("Could not write to socket");
         }
+
+        return true;
+    }
+
+    private boolean receiveNextMessage(InputStream stream) throws ClientDisconnect, ServerConnectionException {
+        byte[] buffer = new byte[HEADER_SIZE];
+        int result;
+
+        try {
+            result = stream.read(buffer, 0, HEADER_SIZE);
+        } catch (SocketTimeoutException e) {
+            throw new ClientDisconnect();
+        } catch (IOException e) {
+            throw new ServerConnectionException(e);
+        }
+
+        if (result < 0) {
+            throw new ClientDisconnect();
+        }
+
+        Header header;
+
+        try {
+            header = parseHeader(buffer, result);
+        } catch (ServerConnectionException e) {
+            throw new ServerConnectionException(e);
+        }
+
+        buffer = new byte[header.payloadSize];
+
+        try {
+            result = stream.read(buffer, 0, header.payloadSize);
+        } catch (SocketTimeoutException e) {
+            throw new ClientDisconnect();
+        } catch (IOException e) {
+            throw new ServerConnectionException(e);
+        }
+
+        if (result < 0) {
+            throw new ClientDisconnect();
+        }
+
+        JSONObject payload;
+
+        try {
+            payload = parsePayload(buffer, result, header);
+        } catch (ServerConnectionException e) {
+            throw new ServerConnectionException(e);
+        }
+
+        Message msg = new Message();
+        msg.header = header;
+        msg.payload = payload;
+
+        incomingMessages.add(msg);
 
         return true;
     }
