@@ -57,11 +57,11 @@ class Server:
 
                 match msg.header.msg_type:
                     case message.MsgType.ClientPing:
-                        self._ctx.process_ping(cl)
+                        self._ctx.process_ping(msg, cl)
                     case message.MsgType.ClientSignUp:
-                        self._ctx.process_sign_up(cl)
+                        self._ctx.process_sign_up(msg, cl)
                     case message.MsgType.ClientLogIn:
-                        self._ctx.process_log_in(cl)
+                        self._ctx.process_log_in(msg, cl)
 
     def _interrupt(self):
         print()
