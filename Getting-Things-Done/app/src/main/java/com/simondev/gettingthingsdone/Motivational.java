@@ -1,15 +1,26 @@
 package com.simondev.gettingthingsdone;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.concurrent.Future;
+
+// https://www.keepinspiring.me/motivational-quotes/
 
 public class Motivational extends Fragment {
     private TodoMotivational motivational;
@@ -35,9 +46,36 @@ public class Motivational extends Fragment {
         setMotivational(txtMotivational);
     }
 
+    @SuppressLint("SetTextI18n")
     private void setMotivational(TextView txtMotivational) {
-        // TODO check timestamp and fetch paragraph from the server
+        txtMotivational.setText("Motivational paragraph...");
 
-        txtMotivational.setText(motivational.paragraph);
+        ServerConnection serverConnection = ((Main) requireActivity()).getServerConnection();
+
+        serverConnection.sendMessage(MsgType.ClientGetMotivational, new JSONObject());
+
+        Future<?> future = serverConnection.sendReceiveAsync();
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> Communication.waitForMessage(serverConnection, handler, future,
+            msg -> {
+                if (msg.header.msgType == MsgType.ServerOfferMotivational) {
+                    String text = null;
+                    String author = null;
+                    try {
+                        text = msg.payload.getString("text");
+                        author = msg.payload.getString("author");
+                    } catch (JSONException ignored) {}
+
+                    motivational.text = text;
+                    motivational.author = author;
+
+                    if (motivational.text != null && motivational.author != null) {
+                        txtMotivational.setText(motivational.text + "\n\n" + motivational.author);
+                    }
+                }
+            },
+            errMsg -> Toast.makeText(getContext(), "Unexpected error: " + errMsg, Toast.LENGTH_LONG).show()
+        ));
     }
 }

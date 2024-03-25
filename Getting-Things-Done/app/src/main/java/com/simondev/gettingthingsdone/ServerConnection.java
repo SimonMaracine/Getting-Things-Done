@@ -146,7 +146,7 @@ class ServerConnection {
         try {
             result = stream.read(buffer, 0, HEADER_SIZE);
         } catch (SocketTimeoutException e) {
-            throw new ClientDisconnect();
+            return false;
         } catch (IOException e) {
             throw new ConnectionException(e);
         }
@@ -165,12 +165,14 @@ class ServerConnection {
 
         buffer = new byte[header.payloadSize];
 
-        try {
-            result = stream.read(buffer, 0, header.payloadSize);
-        } catch (SocketTimeoutException e) {
-            throw new ClientDisconnect();
-        } catch (IOException e) {
-            throw new ConnectionException(e);
+        while (true) {
+            try {
+                result = stream.read(buffer, 0, header.payloadSize);
+                break;
+            } catch (SocketTimeoutException ignored) {
+            } catch (IOException e) {
+                throw new ConnectionException(e);
+            }
         }
 
         if (result < 0) {

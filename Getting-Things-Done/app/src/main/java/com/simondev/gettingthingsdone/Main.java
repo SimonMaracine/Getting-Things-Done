@@ -23,6 +23,10 @@ public class Main extends AppCompatActivity {
         return motivational;
     }
 
+    ServerConnection getServerConnection() {
+        return serverConnection;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

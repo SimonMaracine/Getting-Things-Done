@@ -1,4 +1,5 @@
 import pprint
+import random
 
 import message
 import client
@@ -9,6 +10,7 @@ class Context:
     def __init__(self):
         self._registered_users: list[data.User] = data.get_registered_users()
         self._lists: list[data.List] = data.get_tasks()
+        self._motivational: list[tuple[str, str]] = data.get_motivational()
 
         print("Currently registered users:")
         pprint.pprint(self._registered_users)
@@ -16,6 +18,8 @@ class Context:
         print("Stored tasks:")
         for todo_list in self._lists:
             print(f"Name: {todo_list.name}, count: {len(todo_list.tasks)}, user: {todo_list.user_email}")
+
+        print(f"Motivationals: {len(self._motivational)}")
 
     def ping(self, msg: message.Message, cl: client.ClientConnection):
         print(msg.payload["msg"])
@@ -86,6 +90,11 @@ class Context:
 
         self._end_tasks(cl)
 
+    def get_motivational(self, msg: message.Message, cl: client.ClientConnection):
+        text, author = random.choice(self._motivational)
+
+        self._offer_motivational(cl, text, author)
+
     def _ping(self, cl: client.ClientConnection, msg: str):
         cl.enqueue_message(
             self._construct_message(message.MsgType.ServerPing, {"msg": msg})
@@ -127,6 +136,11 @@ class Context:
     def _end_tasks(self, cl: client.ClientConnection):
         cl.enqueue_message(
             self._construct_message(message.MsgType.ServerEndTasks, {})
+        )
+
+    def _offer_motivational(self, cl: client.ClientConnection, text: str, author: str):
+        cl.enqueue_message(
+            self._construct_message(message.MsgType.ServerOfferMotivational, {"text": text, "author": author})
         )
 
     def _construct_message(self, msg_type: int, payload: dict) -> message.Message:

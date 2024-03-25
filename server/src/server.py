@@ -27,13 +27,12 @@ class Server:
         listening_thread.start()
 
         try:
-            while True:
-                try:
+            try:
+                while True:
                     self._process_clients()
                     self._process_finished_clients()
-                except KeyboardInterrupt:
-                    self._interrupt()
-                    break
+            except KeyboardInterrupt:
+                self._interrupt()
         except Exception as err:
             print(f"Unexpected error occurred: {err}")
             self._listening = False
@@ -72,6 +71,8 @@ class Server:
                         self._ctx.log_in(msg, cl)
                     case message.MsgType.ClientGetTasks:
                         self._ctx.get_tasks(msg, cl)
+                    case message.MsgType.ClientGetMotivational:
+                        self._ctx.get_motivational(msg, cl)
 
     def _interrupt(self):
         print()

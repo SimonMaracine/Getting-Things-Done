@@ -11,10 +11,7 @@ class MsgType:
     ClientSignUp = 2
     ClientLogIn = 3
     ClientGetTasks = 4
-    # ClientCreateList = 5
-    # ClientAddTask = 6
-    # ClientDeleteList = 7
-    # ClientRemoveTask = 8
+    ClientGetMotivational = 5
 
     ServerPing = 10
     ServerSignUpOk = 11
@@ -24,9 +21,10 @@ class MsgType:
     ServerOfferTasksL = 15
     ServerOfferTasksT = 16
     ServerEndTasks = 17
+    ServerOfferMotivational = 18
 
     _ClientFirst = ClientPing
-    _ClientLast = ClientLogIn
+    _ClientLast = ClientGetMotivational
 
     def in_range_client(msg_type: int) -> bool:
         return MsgType._ClientFirst <= msg_type <= MsgType._ClientLast
@@ -97,6 +95,8 @@ def parse_payload(data: bytes, header: Header) -> dict:
             keys = (
                 ("email", str),
             )
+        case MsgType.ClientGetMotivational:
+            keys = ()
 
     for key in keys:
         if (key[0], key[1]) not in map(lambda item: (item[0], type(item[1])), obj.items()):

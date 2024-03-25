@@ -4,6 +4,7 @@ import json
 
 _REGISTERED_USERS_FILE = "registered_users"
 _TASKS_FILE = "tasks"
+_MOTIVATIONAL = "MOTIVATIONAL"
 
 
 @dataclasses.dataclass(slots=True)
@@ -60,12 +61,14 @@ def create_tasks_file():
 
 def get_tasks() -> list[List]:
     try:
-        obj: list[dict] = json.load(_TASKS_FILE)
+        with open(_TASKS_FILE, "r") as file:
+            try:
+                obj: list[dict] = json.load(file)
+            except json.JSONDecodeError as err:
+                print(err)
+                return []
     except FileNotFoundError:
         create_tasks_file()
-        return []
-    except json.JSONDecodeError as err:
-        print(err)
         return []
 
     result = []
@@ -78,5 +81,19 @@ def get_tasks() -> list[List]:
         result_tasks = [Task(task["contents"], task["done"]) for task in tasks]
 
         result.append(List(user_email, name, result_tasks))
+
+    return result
+
+
+def get_motivational() -> list[tuple[str, str]]:
+    with open(_MOTIVATIONAL, "r") as file:
+        lines = file.readlines()
+
+    result = []
+
+    for line in lines:
+        text, author = line.split(" | ")
+
+        result.append((text, author.rstrip()))
 
     return result
