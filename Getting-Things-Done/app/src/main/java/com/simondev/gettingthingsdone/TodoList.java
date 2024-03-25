@@ -18,7 +18,7 @@ class TodoList implements Iterable<TodoTask> {
 
     int addTask(String title) {
         TodoTask task = new TodoTask(counter);
-        task.content = title;
+        task.contents = title;
 
         tasks.put(counter, task);
 

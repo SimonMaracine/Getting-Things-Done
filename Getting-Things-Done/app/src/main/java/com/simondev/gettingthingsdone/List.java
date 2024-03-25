@@ -8,6 +8,7 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
+import android.text.InputFilter;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -68,7 +69,7 @@ public class List extends Fragment {
         list.setName(((EditText) requireActivity().findViewById(R.id.inpName)).getText().toString());
 
         for (TodoTask task : list) {
-            task.content = inpTasks.get(task.index).getText().toString();
+            task.contents = inpTasks.get(task.index).getText().toString();
         }
     }
 
@@ -107,6 +108,7 @@ public class List extends Fragment {
             0.75f
         ));
         inpTask.setSingleLine(false);
+        inpTask.setFilters(new InputFilter[]{ new InputFilter.LengthFilter(200)});
 
         lytTask.addView(inpTask);
 
@@ -156,7 +158,7 @@ public class List extends Fragment {
 
     private void createPresentTasks() {
         for (TodoTask task : list) {
-            createTaskViews(task.index, task.content, task.done);
+            createTaskViews(task.index, task.contents, task.done);
         }
     }
 }

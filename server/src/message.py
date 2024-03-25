@@ -11,14 +11,19 @@ class MsgType:
     ClientSignUp = 2
     ClientLogIn = 3
     ClientGetTasks = 4
+    # ClientCreateList = 5
+    # ClientAddTask = 6
+    # ClientDeleteList = 7
+    # ClientRemoveTask = 8
 
     ServerPing = 10
     ServerSignUpOk = 11
     ServerSignUpFail = 12
     ServerLogInOk = 13
     ServerLogInFail = 14
-    ServerOfferTasks = 15
-    ServerEndTasks = 16
+    ServerOfferTasksL = 15
+    ServerOfferTasksT = 16
+    ServerEndTasks = 17
 
     _ClientFirst = ClientPing
     _ClientLast = ClientLogIn
@@ -27,13 +32,13 @@ class MsgType:
         return MsgType._ClientFirst <= msg_type <= MsgType._ClientLast
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Header:
     msg_type: int
     payload_size: int
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class Message:
     header: Header
     payload: dict
@@ -90,7 +95,7 @@ def parse_payload(data: bytes, header: Header) -> dict:
             )
         case MsgType.ClientGetTasks:
             keys = (
-                ("list", str),
+                ("email", str),
             )
 
     for key in keys:

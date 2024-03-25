@@ -30,6 +30,7 @@
                 android:hint="Name"
                 android:importantForAutofill="no"
                 android:inputType="text"
+                android:maxLength="16"
                 tools:ignore="HardcodedText" />
 
             <Button

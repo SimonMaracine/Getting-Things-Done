@@ -2,7 +2,7 @@ package com.simondev.gettingthingsdone;
 
 class TodoTask {
     final int index;
-    String content;
+    String contents;
     boolean done = false;
 
     TodoTask(int index) {

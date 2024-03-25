@@ -174,10 +174,10 @@ public class Settings extends Fragment {
             createListViews(list.index, list.getName());
 
             for (TodoTask task : list) {
-                String content = task.content;
+                String content = task.contents;
 
-                if (content.length() > 10) {
-                    content = content.substring(0, 10) + "...";
+                if (content.length() > 8) {
+                    content = content.substring(0, 8) + "...";
                 }
 
                 createTaskViews(list.index, task.index, content);
