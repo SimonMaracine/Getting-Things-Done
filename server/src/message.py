@@ -18,7 +18,7 @@ class MsgType:
     ServerLogInFail = 14
 
     _ClientFirst = ClientPing
-    _ClientLast = ClientPing
+    _ClientLast = ClientLogIn
 
     def in_range_client(msg_type: int) -> bool:
         return MsgType._ClientFirst <= msg_type <= MsgType._ClientLast
@@ -74,6 +74,16 @@ def parse_payload(data: bytes, header: Header) -> dict:
         case MsgType.ClientPing:
             keys = (
                 ("msg", str),
+            )
+        case MsgType.ClientSignUp:
+            keys = (
+                ("email", str),
+                ("password", str),
+            )
+        case MsgType.ClientLogIn:
+            keys = (
+                ("email", str),
+                ("password", str),
             )
 
     for key in keys:

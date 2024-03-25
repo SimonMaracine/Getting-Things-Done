@@ -4,13 +4,20 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.concurrent.Future;
+
 public class Login extends AppCompatActivity {
+    private EditText inpEmail;
+    private EditText inpPassword;
+
     private ServerConnection serverConnection;
 
     @Override
@@ -18,7 +25,10 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        findViewById(R.id.btnLogin).setOnClickListener(this::onLoginButtonPressed);
+        inpEmail = findViewById(R.id.inpEmail);
+        inpPassword = findViewById(R.id.inpPassword);
+
+        findViewById(R.id.btnLogIn).setOnClickListener(this::onLogInButtonPressed);
         findViewById(R.id.btnSignUp).setOnClickListener(this::onSignUpButtonPressed);
 
         try {
@@ -30,7 +40,7 @@ public class Login extends AppCompatActivity {
         ((GettingThingsDone) getApplicationContext()).serverConnection = serverConnection;
     }
 
-    private void onLoginButtonPressed(View view) {
+    private void onLogInButtonPressed(View view) {
         // TODO send a log in request, then wait for validation and result
 
         startActivity(new Intent(Login.this, Main.class));
@@ -38,39 +48,62 @@ public class Login extends AppCompatActivity {
     }
 
     private void onSignUpButtonPressed(View view) {
-        // TODO send a create account request, then wait for validation and result
+        String email = inpEmail.getText().toString();
+        String password = inpPassword.getText().toString();
 
-        Toast.makeText(getApplicationContext(), "Sign up pressed", Toast.LENGTH_SHORT).show();
-
-        if (serverConnection != null) {
-            JSONObject obj = new JSONObject();
-            try {
-                obj.put("msg", "Hello world");
-            } catch (JSONException ignored) {}
-
-            serverConnection.sendMessage(MsgType.ClientPing, obj);
-
-            try {
-                serverConnection.sendReceive();
-            } catch (ServerConnectionException e) {
-                Toast.makeText(this, "Could not send-receive messages: " + e, Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            Message msg = serverConnection.receiveMessage();
-
-            String message;
-            try {
-                message = msg.payload.getString("msg");
-            } catch (JSONException e) {
-                Toast.makeText(this, "Could not send-receive messages: " + e, Toast.LENGTH_LONG).show();
-                return;
-            }
-
-            Toast.makeText(this, message, Toast.LENGTH_LONG).show();
+        if (email.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Email field is empty", Toast.LENGTH_LONG).show();
+            return;
         }
 
-//        Handler h = new Handler(getMainLooper());
-//        h.post(null);
+        // TODO check email with regex
+
+        if (password.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Password field is empty", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (password.length() < 15) {
+            Toast.makeText(getApplicationContext(), "Password is too short", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        if (serverConnection == null) {
+            Toast.makeText(getApplicationContext(), "Not connected to the server", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("email", email);
+            obj.put("password", password);
+        } catch (JSONException ignored) {}
+
+        serverConnection.sendMessage(MsgType.ClientSignUp, obj);
+
+        Future<?> future = serverConnection.sendReceiveAsync();
+
+        Handler handler = new Handler(getMainLooper());
+        handler.post(() -> Communication.waitForMessage(serverConnection, handler, future,
+            msg -> {
+                switch (msg.header.msgType) {
+                    case MsgType.ServerSignUpOk -> {
+                        Toast.makeText(this, "Successfully signed up", Toast.LENGTH_LONG).show();
+                    }
+                    case MsgType.ServerSignUpFail -> {
+                        String message = "";
+                        try {
+                            message = msg.payload.getString("msg");
+                        } catch (JSONException ignored) {}
+
+                        Toast.makeText(this, "Failed to sign up: " + message, Toast.LENGTH_LONG).show();
+                    }
+                    default -> {
+                        assert false;
+                    }
+                }
+            },
+            errMsg -> Toast.makeText(this, "Failed to sign up: " + errMsg, Toast.LENGTH_LONG).show()
+        ));
     }
 }

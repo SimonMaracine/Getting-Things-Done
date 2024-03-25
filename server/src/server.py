@@ -12,6 +12,7 @@ class Server:
 
     def __init__(self):
         self._listening = True
+        self._exit_code = 0
 
         self._clients: dict[int, client.Client] = {}
         self._clients_counter = 0
@@ -19,19 +20,24 @@ class Server:
 
         self._ctx = context.Context()
 
-    def run(self):
+    def run(self) -> int:
         print("Starting server...")
 
         listening_thread = threading.Thread(target=self._listen_for_connections)
         listening_thread.start()
 
-        while True:
-            try:
-                self._process_clients()
-                self._process_finished_clients()
-            except KeyboardInterrupt:
-                self._interrupt()
-                break
+        try:
+            while True:
+                try:
+                    self._process_clients()
+                    self._process_finished_clients()
+                except KeyboardInterrupt:
+                    self._interrupt()
+                    break
+        except Exception as err:
+            print(f"Unexpected error occurred: {err}")
+            self._listening = False
+            self._exit_code = 1
 
         listening_thread.join()
 
@@ -46,6 +52,8 @@ class Server:
 
         print("Stopped server")
 
+        return self._exit_code
+
     def _process_clients(self):
         with self._clients_mutex:
             cl: client.Client
@@ -57,11 +65,11 @@ class Server:
 
                 match msg.header.msg_type:
                     case message.MsgType.ClientPing:
-                        self._ctx.process_ping(msg, cl)
+                        self._ctx.ping(msg, cl)
                     case message.MsgType.ClientSignUp:
-                        self._ctx.process_sign_up(msg, cl)
+                        self._ctx.sign_up(msg, cl)
                     case message.MsgType.ClientLogIn:
-                        self._ctx.process_log_in(msg, cl)
+                        self._ctx.log_in(msg, cl)
 
     def _interrupt(self):
         print()

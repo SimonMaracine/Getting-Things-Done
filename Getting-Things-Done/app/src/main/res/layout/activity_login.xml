@@ -62,12 +62,12 @@
             tools:ignore="HardcodedText" />
 
         <Button
-            android:id="@+id/btnLogin"
+            android:id="@+id/btnLogIn"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="0"
             android:fontFamily="sans-serif-medium"
-            android:text="Login"
+            android:text="Log In"
             tools:ignore="HardcodedText" />
     </LinearLayout>
 

@@ -74,7 +74,7 @@ class ServerConnection {
         });
     }
 
-    void awaitFuture(Future<?> future) throws ServerConnectionException {
+    static void awaitFuture(Future<?> future) throws ServerConnectionException {
         try {
             future.get();
         } catch (ExecutionException e) {
