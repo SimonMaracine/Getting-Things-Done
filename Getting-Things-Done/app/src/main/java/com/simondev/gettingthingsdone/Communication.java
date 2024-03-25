@@ -14,7 +14,7 @@ class Communication {
 
         try {
             ServerConnection.awaitFuture(future);
-        } catch (ServerConnectionException e) {
+        } catch (ConnectionException e) {
             onError.call(e.getMessage());
 
             return;

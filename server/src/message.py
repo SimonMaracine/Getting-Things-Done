@@ -10,12 +10,15 @@ class MsgType:
     ClientPing = 1
     ClientSignUp = 2
     ClientLogIn = 3
+    ClientGetTasks = 4
 
     ServerPing = 10
     ServerSignUpOk = 11
     ServerSignUpFail = 12
     ServerLogInOk = 13
     ServerLogInFail = 14
+    ServerOfferTasks = 15
+    ServerEndTasks = 16
 
     _ClientFirst = ClientPing
     _ClientLast = ClientLogIn
@@ -84,6 +87,10 @@ def parse_payload(data: bytes, header: Header) -> dict:
             keys = (
                 ("email", str),
                 ("password", str),
+            )
+        case MsgType.ClientGetTasks:
+            keys = (
+                ("list", str),
             )
 
     for key in keys:

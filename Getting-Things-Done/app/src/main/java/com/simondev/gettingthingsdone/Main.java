@@ -69,7 +69,7 @@ public class Main extends AppCompatActivity {
 
         try {
             serverConnection = new ServerConnection("192.168.1.250", 1922);
-        } catch (ServerConnectionException e) {
+        } catch (ConnectionException e) {
             Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
         }
     }

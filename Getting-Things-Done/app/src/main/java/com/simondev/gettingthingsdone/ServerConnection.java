@@ -24,20 +24,20 @@ class ServerConnection {
     private static final int HEADER_SIZE = 4;
     private static final int MAX_PAYLOAD_SIZE = 512 - HEADER_SIZE;
 
-    ServerConnection(String host, int port) throws ServerConnectionException {
+    ServerConnection(String host, int port) throws ConnectionException {
         Future<?> future = executor.submit(() -> {
             try {
                 socket = new Socket(host, port);
                 socket.setSoTimeout(3000);
             } catch (IOException e) {
-                throw new ServerConnectionExceptionRT("Could not connect to " + host + ": " + e);
+                throw new ConnectionExceptionRT("Could not connect to " + host + ": " + e);
             }
         });
 
         awaitFuture(future);
     }
 
-    void sendReceive() throws ServerConnectionException {
+    void sendReceive() throws ConnectionException {
         Future<?> future = sendReceiveAsync();
 
         awaitFuture(future);
@@ -53,8 +53,8 @@ class ServerConnection {
                     if (sendNextMessage(socket.getOutputStream())) {
                         sent = true;
                     }
-                } catch (ServerConnectionException | IOException e1) {
-                    throw new ServerConnectionExceptionRT(e1);
+                } catch (ConnectionException | IOException e1) {
+                    throw new ConnectionExceptionRT(e1);
                 }
 
                 try {
@@ -66,21 +66,21 @@ class ServerConnection {
                         socket.close();
                     } catch (IOException ignored) {}
 
-                    throw new ServerConnectionExceptionRT("Disconnected from server");
-                } catch (ServerConnectionException | IOException e) {
-                    throw new ServerConnectionExceptionRT(e);
+                    throw new ConnectionExceptionRT("Disconnected from server");
+                } catch (ConnectionException | IOException e) {
+                    throw new ConnectionExceptionRT(e);
                 }
             } while (!received || !sent);
         });
     }
 
-    static void awaitFuture(Future<?> future) throws ServerConnectionException {
+    static void awaitFuture(Future<?> future) throws ConnectionException {
         try {
             future.get();
         } catch (ExecutionException e) {
-            throw new ServerConnectionException(e);
+            throw new ConnectionException(e);
         } catch (InterruptedException e) {
-            throw new ServerConnectionException("Unexpected error occurred: " + e);
+            throw new ConnectionException("Unexpected error occurred: " + e);
         }
     }
 
@@ -109,7 +109,7 @@ class ServerConnection {
         } catch (IOException ignored) {}
     }
 
-    private boolean sendNextMessage(OutputStream stream) throws ServerConnectionException {
+    private boolean sendNextMessage(OutputStream stream) throws ConnectionException {
         Message msg = outgoingMessages.poll();
 
         if (msg == null) {
@@ -133,13 +133,13 @@ class ServerConnection {
             stream.write(all);
             stream.flush();
         } catch (IOException ignored) {
-            throw new ServerConnectionException("Could not write to socket");
+            throw new ConnectionException("Could not write to socket");
         }
 
         return true;
     }
 
-    private boolean receiveNextMessage(InputStream stream) throws ClientDisconnect, ServerConnectionException {
+    private boolean receiveNextMessage(InputStream stream) throws ClientDisconnect, ConnectionException {
         byte[] buffer = new byte[HEADER_SIZE];
         int result;
 
@@ -148,7 +148,7 @@ class ServerConnection {
         } catch (SocketTimeoutException e) {
             throw new ClientDisconnect();
         } catch (IOException e) {
-            throw new ServerConnectionException(e);
+            throw new ConnectionException(e);
         }
 
         if (result < 0) {
@@ -159,8 +159,8 @@ class ServerConnection {
 
         try {
             header = parseHeader(buffer, result);
-        } catch (ServerConnectionException e) {
-            throw new ServerConnectionException(e);
+        } catch (ConnectionException e) {
+            throw new ConnectionException(e);
         }
 
         buffer = new byte[header.payloadSize];
@@ -170,7 +170,7 @@ class ServerConnection {
         } catch (SocketTimeoutException e) {
             throw new ClientDisconnect();
         } catch (IOException e) {
-            throw new ServerConnectionException(e);
+            throw new ConnectionException(e);
         }
 
         if (result < 0) {
@@ -181,8 +181,8 @@ class ServerConnection {
 
         try {
             payload = parsePayload(buffer, result, header);
-        } catch (ServerConnectionException e) {
-            throw new ServerConnectionException(e);
+        } catch (ConnectionException e) {
+            throw new ConnectionException(e);
         }
 
         Message msg = new Message();
@@ -194,20 +194,20 @@ class ServerConnection {
         return true;
     }
 
-    private Header parseHeader(byte[] buffer, int read) throws ServerConnectionException {
+    private Header parseHeader(byte[] buffer, int read) throws ConnectionException {
         if (read < HEADER_SIZE) {
-            throw new ServerConnectionException("Malformed header: not enough bytes");
+            throw new ConnectionException("Malformed header: not enough bytes");
         }
 
         short msgType = bytesToShort(buffer, 0);
         short payloadSize = bytesToShort(buffer, 2);
 
         if (!MsgType.inRangeServer(msgType)) {
-            throw new ServerConnectionException("Malformed header: message type: " + msgType);
+            throw new ConnectionException("Malformed header: message type: " + msgType);
         }
 
         if (!(payloadSize >= 0 && payloadSize <= MAX_PAYLOAD_SIZE)) {
-            throw new ServerConnectionException("Malformed header: payload size: " + payloadSize);
+            throw new ConnectionException("Malformed header: payload size: " + payloadSize);
         }
 
         Header header = new Header();
@@ -217,9 +217,9 @@ class ServerConnection {
         return header;
     }
 
-    private JSONObject parsePayload(byte[] buffer, int read, Header header) throws ServerConnectionException {
+    private JSONObject parsePayload(byte[] buffer, int read, Header header) throws ConnectionException {
         if (read != header.payloadSize) {
-            throw new ServerConnectionException("Not enough bytes for payload: got " + read + ", expected " + header.payloadSize);
+            throw new ConnectionException("Not enough bytes for payload: got " + read + ", expected " + header.payloadSize);
         }
 
         JSONObject obj;
@@ -227,7 +227,7 @@ class ServerConnection {
         try {
             obj = (JSONObject) new JSONTokener(new String(buffer)).nextValue();
         } catch (JSONException e) {
-            throw new ServerConnectionException("Parse error: " + e);
+            throw new ConnectionException("Parse error: " + e);
         }
 
         return obj;
@@ -248,22 +248,22 @@ class ServerConnection {
     }
 }
 
-class ServerConnectionExceptionRT extends RuntimeException {
-    ServerConnectionExceptionRT(String message) {
+class ConnectionExceptionRT extends RuntimeException {
+    ConnectionExceptionRT(String message) {
         super(message);
     }
 
-    ServerConnectionExceptionRT(Exception exception) {
+    ConnectionExceptionRT(Exception exception) {
         super(exception);
     }
 }
 
-class ServerConnectionException extends Exception {
-    ServerConnectionException(String message) {
+class ConnectionException extends Exception {
+    ConnectionException(String message) {
         super(message);
     }
 
-    ServerConnectionException(Exception exception) {
+    ConnectionException(Exception exception) {
         super(exception);
     }
 }

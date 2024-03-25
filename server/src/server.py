@@ -70,6 +70,8 @@ class Server:
                         self._ctx.sign_up(msg, cl)
                     case message.MsgType.ClientLogIn:
                         self._ctx.log_in(msg, cl)
+                    case message.MsgType.ClientGetTasks:
+                        self._ctx.get_tasks(msg, cl)
 
     def _interrupt(self):
         print()

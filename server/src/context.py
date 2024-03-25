@@ -68,6 +68,9 @@ class Context:
 
         self._log_in_fail(msg, cl, "No account with that email address")
 
+    def get_tasks(self, msg: message.Message, cl: client.ClientConnection):
+        pass
+
     def _ping(self, msg: message.Message, cl: client.ClientConnection):
         cl.enqueue_message(
             self._construct_message(message.MsgType.ServerPing, {"msg": msg.payload["msg"]})
@@ -92,6 +95,12 @@ class Context:
         cl.enqueue_message(
             self._construct_message(message.MsgType.ServerLogInFail, {"msg": err_msg})
         )
+
+    def _offer_tasks(self, msg: message.Message, cl: client.ClientConnection):
+        pass
+
+    def _end_tasks(self, msg: message.Message, cl: client.ClientConnection):
+        pass
 
     def _construct_message(self, msg_type: int, payload: dict) -> message.Message:
         return message.Message(message.Header(msg_type, -1), payload)
