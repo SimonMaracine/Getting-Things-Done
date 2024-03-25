@@ -9,11 +9,12 @@ class ClientDisconnect(RuntimeError):
     pass
 
 
-class Client:
+class ClientConnection:
     """Class that represents a client; it handles communication between a client and the server and it stores a reference to the thread"""
 
-    def __init__(self, connection: socket.socket):
+    def __init__(self, connection: socket.socket, index: int):
         self._connection = connection
+        self._index = index
         self._thread: threading.Thread = None
         self._finished_serving = False
 
@@ -39,6 +40,9 @@ class Client:
 
     def set_thread(self, thread: threading.Thread):
         self._thread = thread
+
+    def get_index(self) -> int:
+        return self._index
 
     def enqueue_message(self, msg: message.Message):
         self._outgoing_messages.put(msg)

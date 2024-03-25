@@ -14,7 +14,7 @@ class Server:
         self._listening = True
         self._exit_code = 0
 
-        self._clients: dict[int, client.Client] = {}
+        self._clients: dict[int, client.ClientConnection] = {}
         self._clients_counter = 0
         self._clients_mutex = threading.Lock()
 
@@ -42,7 +42,7 @@ class Server:
         listening_thread.join()
 
         with self._clients_mutex:
-            cl: client.Client
+            cl: client.ClientConnection
             for cl in self._clients.values():
                 if not cl.is_finished():
                     cl.close_connection()
@@ -56,7 +56,7 @@ class Server:
 
     def _process_clients(self):
         with self._clients_mutex:
-            cl: client.Client
+            cl: client.ClientConnection
             for cl in self._clients.values():
                 try:
                     msg = cl.dequeue_message()
@@ -79,7 +79,7 @@ class Server:
         with self._clients_mutex:
             finished_clients: list[int] = []
 
-            cl: client.Client
+            cl: client.ClientConnection
             for index, cl in self._clients.items():
                 if cl.is_finished():
                     cl.join_thread()
@@ -108,7 +108,7 @@ class Server:
 
                 connection.setblocking(False)
 
-                cl = client.Client(connection)
+                cl = client.ClientConnection(connection, self._clients_counter)
 
                 thread = threading.Thread(target=self._handle_connection, args=(cl, address))
 
@@ -121,9 +121,9 @@ class Server:
 
                 thread.start()
 
-    def _handle_connection(self, cl: client.Client, address):
+    def _handle_connection(self, cl: client.ClientConnection, address):
         with cl:
-            print(f"Client connected: {address}")
+            print(f"Client connected: {address}, <{cl.get_index()}>")
 
             while True:
                 try:
@@ -133,4 +133,4 @@ class Server:
 
                 cl.send_next_message()
 
-        print(f"Disconnected: {address}")
+        print(f"Disconnected: {address}, <{cl.get_index()}>")

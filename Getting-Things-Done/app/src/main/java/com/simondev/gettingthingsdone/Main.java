@@ -5,12 +5,15 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.google.android.material.tabs.TabLayout;
 
 public class Main extends AppCompatActivity {
     private final TodoLists lists = new TodoLists();
     private final TodoMotivational motivational = new TodoMotivational();
+
+    private ServerConnection serverConnection;
 
     TodoLists getLists() {
         return lists;
@@ -63,5 +66,20 @@ public class Main extends AppCompatActivity {
             @Override
             public void onTabReselected(TabLayout.Tab tab) {}
         });
+
+        try {
+            serverConnection = new ServerConnection("192.168.1.250", 1922);
+        } catch (ServerConnectionException e) {
+            Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (isFinishing()) {
+            serverConnection.close();
+        }
     }
 }

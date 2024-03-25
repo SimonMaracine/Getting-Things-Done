@@ -7,9 +7,7 @@ import java.util.concurrent.Future;
 class Communication {
     static void waitForMessage(ServerConnection serverConnection, Handler handler, Future<?> future, OnMessageArrived onMessageArrived, OnError onError) {
         if (!future.isDone()) {
-            handler.post(() -> {
-                waitForMessage(serverConnection, handler, future, onMessageArrived, onError);
-            });
+            handler.postDelayed(() -> waitForMessage(serverConnection, handler, future, onMessageArrived, onError), 4);
 
             return;
         }

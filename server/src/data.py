@@ -28,7 +28,7 @@ def get_registered_users() -> list[User]:
     for line in lines:
         email, password = line.split(",")
 
-        users.append(User(email, password))
+        users.append(User(email, password.rstrip()))
 
     return users
 

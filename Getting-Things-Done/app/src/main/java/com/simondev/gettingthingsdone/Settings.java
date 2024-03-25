@@ -43,14 +43,16 @@ public class Settings extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        view.findViewById(R.id.btnLogOut).setOnClickListener(v -> {
-            startActivity(new Intent(getActivity(), Login.class));
-            requireActivity().finish();
-        });
+        view.findViewById(R.id.btnLogOut).setOnClickListener(this::onLogOutButtonPressed);
 
         lytAllTasks = view.findViewById(R.id.lytAllTasks);
 
         createPresentTasks();
+    }
+
+    private void onLogOutButtonPressed(View view) {
+        startActivity(new Intent(getActivity(), Login.class));
+        requireActivity().finish();
     }
 
     private void createListViews(int listIndex, String name) {

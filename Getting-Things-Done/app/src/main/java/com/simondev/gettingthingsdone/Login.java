@@ -36,35 +36,72 @@ public class Login extends AppCompatActivity {
         } catch (ServerConnectionException e) {
             Toast.makeText(this, "Could not connect to server: " + e, Toast.LENGTH_LONG).show();
         }
+    }
 
-        ((GettingThingsDone) getApplicationContext()).serverConnection = serverConnection;
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        if (isFinishing()) {
+            if (serverConnection != null) {
+                serverConnection.close();
+            }
+        }
     }
 
     private void onLogInButtonPressed(View view) {
-        // TODO send a log in request, then wait for validation and result
+        String email = inpEmail.getText().toString();
+        String password = inpPassword.getText().toString();
 
-        startActivity(new Intent(Login.this, Main.class));
-        finish();
+        if (!checkEmailAndPasswordInput(email, password)) {
+            return;
+        }
+
+        if (serverConnection == null) {
+            Toast.makeText(getApplicationContext(), "Not connected to the server", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        JSONObject obj = new JSONObject();
+        try {
+            obj.put("email", email);
+            obj.put("password", password);
+        } catch (JSONException ignored) {}
+
+        serverConnection.sendMessage(MsgType.ClientLogIn, obj);
+
+        Future<?> future = serverConnection.sendReceiveAsync();
+
+        Handler handler = new Handler(getMainLooper());
+        handler.post(() -> Communication.waitForMessage(serverConnection, handler, future,
+            msg -> {
+                switch (msg.header.msgType) {
+                    case MsgType.ServerLogInOk -> {
+                        startActivity(new Intent(Login.this, Main.class));
+                        finish();
+                    }
+                    case MsgType.ServerLogInFail -> {
+                        String message = "";
+                        try {
+                            message = msg.payload.getString("msg");
+                        } catch (JSONException ignored) {}
+
+                        Toast.makeText(this, "Failed to log in: " + message, Toast.LENGTH_LONG).show();
+                    }
+                    default -> {
+                        assert false;
+                    }
+                }
+            },
+            errMsg -> Toast.makeText(this, "Unexpected error: " + errMsg, Toast.LENGTH_LONG).show()
+        ));
     }
 
     private void onSignUpButtonPressed(View view) {
         String email = inpEmail.getText().toString();
         String password = inpPassword.getText().toString();
 
-        if (email.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Email field is empty", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        // TODO check email with regex
-
-        if (password.isEmpty()) {
-            Toast.makeText(getApplicationContext(), "Password field is empty", Toast.LENGTH_LONG).show();
-            return;
-        }
-
-        if (password.length() < 15) {
-            Toast.makeText(getApplicationContext(), "Password is too short", Toast.LENGTH_LONG).show();
+        if (!checkEmailAndPasswordInput(email, password)) {
             return;
         }
 
@@ -103,7 +140,28 @@ public class Login extends AppCompatActivity {
                     }
                 }
             },
-            errMsg -> Toast.makeText(this, "Failed to sign up: " + errMsg, Toast.LENGTH_LONG).show()
+            errMsg -> Toast.makeText(this, "Unexpected error: " + errMsg, Toast.LENGTH_LONG).show()
         ));
+    }
+
+    private boolean checkEmailAndPasswordInput(String email, String password) {
+        if (email.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Email field is empty", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        // TODO check email with regex
+
+        if (password.isEmpty()) {
+            Toast.makeText(getApplicationContext(), "Password field is empty", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        if (password.length() < 15) {
+            Toast.makeText(getApplicationContext(), "Password is too short", Toast.LENGTH_LONG).show();
+            return false;
+        }
+
+        return true;
     }
 }
