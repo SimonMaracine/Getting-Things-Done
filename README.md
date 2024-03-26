@@ -41,3 +41,39 @@ sorted hash maps. Every list or task is assigned an integer index that increment
 own counter for its tasks and the application has a counter for all the lists.
 
 ## Server
+
+The Getting Things Done server is written in the `Python` programming language and it is uses its own protocol
+build on top of the `TCP` protocol to communicate to application clients. This time I chose Python, because
+with it, it is easy to quickly write anything. But I acknowledge the fact that a lower level programming language
+like `C++` or `Rust` is a better fit than Python. The lack of time was a big factor in my decisions.
+
+This server listens for incoming connections and creates a new `thread` of execution to handle every client.
+Using `async` functions instead of Python threads would have been better, but again, I didn't have enough time
+to build a good and complete system.
+
+The communication protocol is very simple. The header contains two bytes for the message type and another two
+bytes for the payload size. And the payload consists of a `JSON` structure.
+
+Here is one part of the bigger protocol, the sign up protocol:
+
+    ClientSignUp
+    ServerSignUpOk
+    ServerSignUpFail
+
+When the client sends a sign up message, the server checks to see if the email and the password are valid and
+then sends either an *Ok* or a *Fail* response along with an error message.
+
+This project is actually incomplete, as I didn't have enough time to implement all the basic requirements
+of the original idea. Lists and tasks cannot be transmitted to the server from the client. But it could have
+been easily done, if I had a few more days to work on this.
+
+Clients' emails and passwords are stored in plain text, in a file from the server's file system. Passwords should
+have been `cryptographically hashed` and `salted`, but because the communication is not secured by a layer like
+`TLS`, it was not really worth securing the passwords.
+
+## Closing Thoughts
+
+This project was a pretty good learning experience in my opinion, but still I wish that I had more time to
+finish it and better implement the requirements and the network communication. This was my first big
+Android project, but it was not the first time that I tinkered with network communication over the TCP
+protocol. I'm looking forward one day to build a proper client-server communication in my personal projects.
