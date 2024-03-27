@@ -77,3 +77,4 @@ This project was a pretty good learning experience in my opinion, but still I wi
 finish it and better implement the requirements and the network communication. This was my first big
 Android project, but it was not the first time that I tinkered with network communication over the TCP
 protocol. I'm looking forward one day to build a proper client-server communication in my personal projects.
+

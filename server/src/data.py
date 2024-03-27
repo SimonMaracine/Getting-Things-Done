@@ -55,8 +55,8 @@ def register_user(user: User):
 
 
 def create_tasks_file():
-    with open(_TASKS_FILE, "w"):
-        pass
+    with open(_TASKS_FILE, "w") as file:
+        file.write("[]")
 
 
 def get_tasks() -> list[List]:
