@@ -74,6 +74,13 @@ Clients' emails and passwords are stored in plain text, in a file from the serve
 have been `cryptographically hashed` and `salted`, but because the communication is not secured by a layer like
 `TLS`, it was not really worth securing the passwords.
 
+## Closing Thoughts
+
+This project was a pretty good learning experience in my opinion, but still I wish that I had more time to
+finish it and better implement the requirements and the network communication. This was my first big
+Android project, but it was not the first time that I tinkered with network communication over the TCP
+protocol. I'm looking forward one day to build a proper client-server communication in my personal projects.
+
 ## Gallery
 
 ![Log In Screen](/images/1.jpeg)
@@ -87,11 +94,3 @@ have been `cryptographically hashed` and `salted`, but because the communication
 ![Motivational Screen 1](/images/9.jpeg)
 ![Motivational Screen 2](/images/10.jpeg)
 ![Server](/images/11.png)
-
-## Closing Thoughts
-
-This project was a pretty good learning experience in my opinion, but still I wish that I had more time to
-finish it and better implement the requirements and the network communication. This was my first big
-Android project, but it was not the first time that I tinkered with network communication over the TCP
-protocol. I'm looking forward one day to build a proper client-server communication in my personal projects.
-
