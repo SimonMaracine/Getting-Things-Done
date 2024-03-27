@@ -40,6 +40,9 @@ data structures (lists or tasks) and also refer to them at any point. This is th
 sorted hash maps. Every list or task is assigned an integer index that increments from zero. Every list has its
 own counter for its tasks and the application has a counter for all the lists.
 
+The motivational quotes are stored on and received from the server. This allows more flexibility than quotes
+stored locally in the application. The article link from which I took the quotes can be found in the source code.
+
 ## Server
 
 The Getting Things Done server is written in the `Python` programming language and it is uses its own protocol
@@ -70,6 +73,20 @@ been easily done, if I had a few more days to work on this.
 Clients' emails and passwords are stored in plain text, in a file from the server's file system. Passwords should
 have been `cryptographically hashed` and `salted`, but because the communication is not secured by a layer like
 `TLS`, it was not really worth securing the passwords.
+
+## Gallery
+
+![Log In Screen](/images/1.jpeg)
+![Log In Failed](/images/2.jpeg)
+![Lists Screen Empty](/images/3.jpeg)
+![Lists Screen With Stuff](/images/4.jpeg)
+![List With Tasks](/images/5.jpeg)
+![List Just Created](/images/6.jpeg)
+![Settings Screen 1](/images/7.jpeg)
+![Settings Screen 2](/images/8.jpeg)
+![Motivational Screen 1](/images/9.jpeg)
+![Motivational Screen 2](/images/10.jpeg)
+![Server](/images/11.png)
 
 ## Closing Thoughts
 
